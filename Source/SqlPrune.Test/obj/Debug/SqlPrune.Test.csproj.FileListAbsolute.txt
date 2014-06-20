@@ -1,9 +1,0 @@
-C:\source\sql-prune\Source\SqlPrune.Test\bin\Debug\SqlPrune.Test.dll
-C:\source\sql-prune\Source\SqlPrune.Test\bin\Debug\SqlPrune.Test.pdb
-C:\source\sql-prune\Source\SqlPrune.Test\bin\Debug\sqlprune.exe
-C:\source\sql-prune\Source\SqlPrune.Test\bin\Debug\Sugar.dll
-C:\source\sql-prune\Source\SqlPrune.Test\bin\Debug\sqlprune.pdb
-C:\source\sql-prune\Source\SqlPrune.Test\bin\Debug\Sugar.pdb
-C:\source\sql-prune\Source\SqlPrune.Test\obj\Debug\SqlPrune.Test.csprojResolveAssemblyReference.cache
-C:\source\sql-prune\Source\SqlPrune.Test\obj\Debug\SqlPrune.Test.dll
-C:\source\sql-prune\Source\SqlPrune.Test\obj\Debug\SqlPrune.Test.pdb
