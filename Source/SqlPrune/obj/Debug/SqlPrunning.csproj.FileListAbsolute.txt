@@ -1,0 +1,3 @@
+C:\source\sql-pruning\SqlPrunning\SqlPrunning\bin\Debug\SqlPrunning.exe.config
+C:\source\sql-pruning\Source\SqlPrunning\bin\Debug\SqlPrunning.exe.config
+C:\source\sql-pruning\Source\SqlPrunning\bin\Debug\sql-prune.exe.config

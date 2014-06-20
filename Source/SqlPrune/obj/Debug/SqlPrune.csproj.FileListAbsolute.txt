@@ -1,0 +1,9 @@
+C:\source\sql-pruning\Source\SqlPrunning\bin\Debug\sql-prune.exe.config
+C:\source\sql-prune\Source\SqlPrune\bin\Debug\sqlprune.exe.config
+C:\source\sql-prune\Source\SqlPrune\obj\Debug\SqlPrune.csprojResolveAssemblyReference.cache
+C:\source\sql-prune\Source\SqlPrune\bin\Debug\sqlprune.exe
+C:\source\sql-prune\Source\SqlPrune\bin\Debug\sqlprune.pdb
+C:\source\sql-prune\Source\SqlPrune\bin\Debug\Sugar.dll
+C:\source\sql-prune\Source\SqlPrune\bin\Debug\Sugar.pdb
+C:\source\sql-prune\Source\SqlPrune\obj\Debug\sqlprune.exe
+C:\source\sql-prune\Source\SqlPrune\obj\Debug\sqlprune.pdb
