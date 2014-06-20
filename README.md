@@ -28,6 +28,7 @@ The utility relies on the date *in the file name*, **not** the file system's cre
 
 ####Todo:
 
+* Add local folder support: at the moment the command doesn't do anything!
 * Add S3 support: add bucket name parameter to use intead of a local folder 
 
 ####Download:
