@@ -1,4 +1,8 @@
-﻿using Sugar.Command;
+﻿using System;
+using System.IO;
+using Comsec.SqlPrune.Interfaces;
+using Comsec.SqlPrune.Services;
+using Sugar.Command;
 
 namespace Comsec.SqlPrune.Commands
 {
@@ -25,6 +29,14 @@ namespace Comsec.SqlPrune.Commands
 
         #region Dependencies
 
+        /// <summary>
+        /// Gets or sets the file service.
+        /// </summary>
+        /// <value>
+        /// The file service.
+        /// </value>
+        public IFileService FileService { get; set; }
+
         #endregion
 
         /// <summary>
@@ -32,6 +44,7 @@ namespace Comsec.SqlPrune.Commands
         /// </summary>
         public PruneCommand()
         {
+            FileService = new FileService();
         }
 
         /// <summary>
@@ -40,6 +53,13 @@ namespace Comsec.SqlPrune.Commands
         /// <param name="options">The options.</param>
         public override int Execute(Options options)
         {
+            if (!FileService.IsDirectory(options.Path))
+            {
+                Console.WriteLine("Invalid path: You must provide a path to a folder.");
+
+                return (int) ExitCode.GeneralError;
+            }
+
             return (int) ExitCode.Success;
         }
     }
