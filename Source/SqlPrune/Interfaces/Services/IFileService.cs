@@ -1,24 +1,18 @@
 ﻿using System.IO;
-using Comsec.SqlPrune.Interfaces;
 
-namespace Comsec.SqlPrune.Services
+namespace Comsec.SqlPrune.Interfaces
 {
     /// <summary>
-    /// Wrapper service for access to <see cref="System.IO.File"/> and <see cref="System.IO.Directory"/>
+    /// Interface to wrap call to <see cref="System.IO.File" />
     /// </summary>
-    public class FileService : IFileService
+    public interface IFileService
     {
         /// <summary>
         /// Determines whether the specified path is a directory.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
-        public bool IsDirectory(string path)
-        {
-            var pathAttributes = File.GetAttributes(path);
-
-            return (pathAttributes & FileAttributes.Directory) == FileAttributes.Directory;
-        }
+        bool IsDirectory(string path);
 
         /// <summary>
         /// Returns the names of files (including their paths) that match the specified 
@@ -38,9 +32,6 @@ namespace Comsec.SqlPrune.Services
         /// An array of the full names (including paths) for the files in the specified
         /// directory that match the specified search pattern and option.
         /// </returns>
-        public string[] GetFiles(string dirPath, string searchPattern, SearchOption option)
-        {
-            return Directory.GetFiles(dirPath, searchPattern, option);
-        }
+        string[] GetFiles(string dirPath, string searchPattern, SearchOption option);
     }
 }

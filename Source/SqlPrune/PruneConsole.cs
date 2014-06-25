@@ -10,36 +10,42 @@ namespace Comsec.SqlPrune
     /// </summary>
     public class PruneConsole : BaseCommandConsole
     {
-        /// <summary>
-        /// Displays the help message
-        /// </summary>
-        public override int Default()
+        public static void OutputVersion(ConsoleColor previousForegroundColor)
         {
             var assembly = Assembly.GetExecutingAssembly();
             var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
             var version = fvi.FileVersion;
 
-            var previousColour = Console.ForegroundColor;
-            
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("SQL Pruning Utility - v" + version);
-            Console.ForegroundColor = previousColour;
+            Console.ForegroundColor = previousForegroundColor;
             Console.WriteLine(" - Comsec Solutions Ltd - http://comsechq.com");
             Console.WriteLine();
+        }
+
+        /// <summary>
+        /// Displays the help message
+        /// </summary>
+        public override int Default()
+        {
+            var previousColor = Console.ForegroundColor;
+
+            OutputVersion(previousColor);
+
             Console.WriteLine("A simple utility to to prune MS-SQL backup files from a given folder.");
             Console.WriteLine();
             Console.Write("Get more information or contribute on github: ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("https://github.com/comsechq/sql-prune");
-            Console.ForegroundColor = previousColour;
+            Console.ForegroundColor = previousColor;
             Console.WriteLine();
             Console.WriteLine("Usage:");
             Console.WriteLine();
-            Console.WriteLine("    sqlprune.exe -path [pathToFolder] [-delete]");
+            Console.WriteLine("    sqlprune.exe [pathToFolder] [-delete]");
             Console.WriteLine();
-            Console.WriteLine("   path: The path to your local folder containting .bak files (e.g. \"c:\\sql-backups\")");
-            Console.WriteLine(" delete: Unless this flag is present files will not be deleted");
+            Console.WriteLine(" pathToFolder: The path to your local folder containting .bak files (e.g. \"c:\\sql-backups\")");
+            Console.WriteLine("       delete: Unless this flag is present files will not be deleted");
             
             return (int) ExitCode.GeneralError;
         }

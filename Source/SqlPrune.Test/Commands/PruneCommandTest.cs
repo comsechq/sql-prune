@@ -1,4 +1,5 @@
-﻿using Comsec.SqlPrune.Interfaces;
+﻿using System;
+using Comsec.SqlPrune.Interfaces;
 using NUnit.Framework;
 
 namespace Comsec.SqlPrune.Commands
