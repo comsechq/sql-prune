@@ -33,6 +33,7 @@ namespace Comsec.SqlPrune.Models
 
         /// <summary>
         /// Gets or sets the can be pruned.
+        /// If it is prunable it will be deleted, if not, the fruit will be "left in the tree" (that is the bak file will not be deleted).
         /// </summary>
         /// <value>
         /// The can be pruned.
@@ -42,5 +43,20 @@ namespace Comsec.SqlPrune.Models
         /// with regard to a given backup set. <see cref="Services.PruneService"/>
         /// </remarks>
         public bool? Prunable { get; set; }
+
+        public string Status
+        {
+            get
+            {
+                return Prunable.HasValue
+                    ? Prunable.Value ? "Prune" : "Keep"
+                    : "?";
+            }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} created on {1:yyy-MM-dd HH:mm:ss} {2}", DatabaseName, Created, Status);
+        }
     }
 }

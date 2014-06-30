@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Comsec.SqlPrune.Interfaces;
+using Comsec.SqlPrune.Interfaces.Services;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Services;
 using Sugar.Command;
@@ -49,6 +50,14 @@ namespace Comsec.SqlPrune.Commands
         /// </value>
         public IFileService FileService { get; set; }
 
+        /// <summary>
+        /// Gets or sets the prune service.
+        /// </summary>
+        /// <value>
+        /// The prune service.
+        /// </value>
+        public IPruneService PruneService { get; set; }
+
         #endregion
 
         /// <summary>
@@ -57,6 +66,7 @@ namespace Comsec.SqlPrune.Commands
         public PruneCommand()
         {
             FileService = new FileService();
+            PruneService = new PruneService();
         }
 
         /// <summary>
@@ -65,9 +75,9 @@ namespace Comsec.SqlPrune.Commands
         /// <param name="options">The options.</param>
         public override int Execute(Options options)
         {
-            PruneConsole.OutputVersion(Console.ForegroundColor);
+            PruneConsole.OutputVersion();
 
-            if (!FileService.IsDirectory(options.Path))
+            if (string.IsNullOrEmpty(options.Path) || options.Path.StartsWith("-") || !FileService.IsDirectory(options.Path))
             {
                 Console.WriteLine("Invalid path: You must provide a path to a folder.");
 
@@ -78,6 +88,13 @@ namespace Comsec.SqlPrune.Commands
             Console.WriteLine();
 
             var paths = FileService.GetFiles(options.Path, "*.bak", SearchOption.AllDirectories);
+
+            if (paths == null)
+            {
+                Console.WriteLine("No bak files found in folder or subfolders.");
+
+                return (int) ExitCode.GeneralError;
+            }
 
             var files = new List<BakModel>(paths.Length);
 
@@ -95,15 +112,37 @@ namespace Comsec.SqlPrune.Commands
 
             var backupSets = files.GroupBy(x => x.DatabaseName);
 
-            if (options.Verbose)
+            foreach (var databaseBakupSet in backupSets)
             {
-                foreach (var databaseBakupSet in backupSets)
+                PruneService.FlagPrunableBackupsInSet(databaseBakupSet, DateTime.Now);
+
+                if (options.Verbose)
                 {
-                    Console.WriteLine("Backup set for {0}:", databaseBakupSet.Key);
-                    Console.WriteLine(" Created\t\tPath");
+                    ColorConsole.Write(ConsoleColor.White, " {0}:", databaseBakupSet.Key);
+                    Console.WriteLine();
+                    ColorConsole.Write(ConsoleColor.DarkGray, " Created\t\tStatus\t\tPath");
+                    Console.WriteLine();
                     foreach (var model in databaseBakupSet)
                     {
-                        Console.WriteLine(" {0}\t{1}:", model.Created.ToString("yyyyMMddTHHmmss", CultureInfo.InvariantCulture), model.Path);
+                        Console.Write(" {0}\t", model.Created.ToString("yyyyMMddTHHmmss", CultureInfo.InvariantCulture));
+
+                        if (!model.Prunable.HasValue)
+                        {
+                            Console.Write(model.Status);
+                        }
+                        else if (model.Prunable.Value)
+                        {
+                            ColorConsole.Write(ConsoleColor.DarkRed, model.Status);
+                        }
+                        else
+                        {
+                            ColorConsole.Write(ConsoleColor.DarkGreen, model.Status);
+                        }
+                        Console.Write("\t\t");
+
+                        Console.Write(model.Path);
+                        
+                        Console.WriteLine();
                     }
                     Console.WriteLine();
                 }

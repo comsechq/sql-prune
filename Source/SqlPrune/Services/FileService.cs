@@ -40,7 +40,18 @@ namespace Comsec.SqlPrune.Services
         /// </returns>
         public string[] GetFiles(string dirPath, string searchPattern, SearchOption option)
         {
-            return Directory.GetFiles(dirPath, searchPattern, option);
+            string[] result = null;
+
+            try
+            {
+                result = Directory.GetFiles(dirPath, searchPattern, option);
+            }
+            catch(UnauthorizedAccessException ex)
+            {
+                Console.WriteLine("Unauthorized access to: " + ex.Message);
+            }
+
+            return result;
         }
     }
 }

@@ -10,16 +10,14 @@ namespace Comsec.SqlPrune
     /// </summary>
     public class PruneConsole : BaseCommandConsole
     {
-        public static void OutputVersion(ConsoleColor previousForegroundColor)
+        public static void OutputVersion()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
             var version = fvi.FileVersion;
 
             Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("SQL Pruning Utility - v" + version);
-            Console.ForegroundColor = previousForegroundColor;
+            ColorConsole.Write(ConsoleColor.White, "SQL Pruning Utility - v{0}", version);
             Console.WriteLine(" - Comsec Solutions Ltd - http://comsechq.com");
             Console.WriteLine();
         }
@@ -31,7 +29,7 @@ namespace Comsec.SqlPrune
         {
             var previousColor = Console.ForegroundColor;
 
-            OutputVersion(previousColor);
+            OutputVersion();
 
             Console.WriteLine("A simple utility to to prune MS-SQL backup files from a given folder.");
             Console.WriteLine();

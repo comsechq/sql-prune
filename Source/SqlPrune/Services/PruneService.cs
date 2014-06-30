@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Comsec.SqlPrune.Interfaces.Services;
 using Comsec.SqlPrune.Models;
+using Sugar;
 
 namespace Comsec.SqlPrune.Services
 {
@@ -10,44 +13,82 @@ namespace Comsec.SqlPrune.Services
     /// </summary>
     public class PruneService : IPruneService
     {
+        /// <summary>
+        /// Keeps the first item in the set (set prunable to false) all other items are set as 'prunable'.
+        /// </summary>
+        /// <param name="set">The set.</param>
+        public void KeepFirst(IEnumerable<BakModel> set)
+        {
+            var index = 0;
+
+            foreach (var backup in set)
+            {
+                backup.Prunable = index != 0;
+
+                index++;
+            }
+        }
 
         /// <summary>
-        /// Return true if the backup can be deleted/pruned.
+        /// Ensures only one backup of per day is kept in given <see cref="set"/>.
         /// </summary>
-        /// <param name="backupDatetime">The date and time the database was backed up at.</param>
-        /// <param name="now">The current date time (now).</param>
-        /// <returns>
-        /// 	<c>true</c> if the specified snapshot is deletable; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsDeletable(DateTime backupDatetime, DateTime now)
+        /// <param name="set">The set.</param>
+        /// <remarks>
+        /// This rule should apply last after prunability has already been set.
+        /// </remarks>
+        public void KeepOnePerDay(IEnumerable<BakModel> set)
         {
-            var canPrune = true;
+            var dayGrouping = set.Where(x => x.Prunable.HasValue)
+                                 .GroupBy(x => x.Created.Date);
 
-            var weekOld = now.AddDays(-7);
-            var monthOld = now.AddDays(-30);
+            foreach (var day in dayGrouping)
+            {
+                if (day.Count() > 1 && day.Any(x => !x.Prunable.Value))
+                {
+                    var mostRecentFirst = day.OrderByDescending(x => x.Created);
 
-            if (backupDatetime >= weekOld /* Keep if less than a week old */)
-            {
-                canPrune = false;
+                    KeepFirst(mostRecentFirst);
+                }
             }
-            else if (backupDatetime.Day == 1 /* 1st of the month */)
-            {
-                canPrune = false;
-            }
-            else if (backupDatetime.DayOfWeek == DayOfWeek.Sunday && backupDatetime >= monthOld /* Less than a month old */)
-            {
-                canPrune = false;
-            }
-            else if (backupDatetime.DayOfWeek == DayOfWeek.Sunday && backupDatetime < monthOld /* More than a month old */)
-            {
-                canPrune = true;
-            }
-            else if (backupDatetime < weekOld)
-            {
-                canPrune = true;
-            }
+        }
 
-            return canPrune;
+        /// <summary>
+        /// Marks the the first sunday of the set as not prunable (or keep first backup in set if no sunday).
+        /// </summary>
+        /// <param name="set">The set.</param>
+        public void KeepFirstSundayOrKeepOne(IEnumerable<BakModel> set)
+        {
+            // Oldest first (Created Ascending)
+            var bakModels = set.OrderBy(x => x.Created)
+                               .ToArray();
+
+            if (bakModels.Count(x => x.Created.DayOfWeek == DayOfWeek.Sunday) > 1)
+            {
+                var sundayCount = 0;
+
+                foreach (var bak in bakModels)
+                {
+                    if (bak.Created.DayOfWeek == DayOfWeek.Sunday && sundayCount == 0)
+                    {
+                        bak.Prunable = false;
+                        sundayCount++;
+                    }
+                    else
+                    {
+                        bak.Prunable = true;
+                    }
+                }
+
+            }
+            else
+            {
+                KeepFirst(bakModels);
+            }
+        }
+
+        public void KeepFirstSundayOfYear(IEnumerable<BakModel> set)
+        {
+            
         }
 
         /// <summary>
@@ -58,50 +99,114 @@ namespace Comsec.SqlPrune.Services
         /// <returns></returns>
         public void FlagPrunableBackupsInSet(IEnumerable<BakModel> set, DateTime now)
         {
-            var aWeekFromNow = now.AddDays(-7);
-            var aMonthFromNow = now.AddMonths(-1);
+            // Make sure the set is ordered (and most recent first)
+            set = set.OrderByDescending(x => x.Created);
 
-            var weekOldSets = new List<BakModel>();
-            var monthOldSets = new List<BakModel>();
-            var yearOldSets = new List<BakModel>();
+            var startOfWeek = now.Date.StartOfWeek(DayOfWeek.Sunday);
+
+            var aWeekFromNow = now.AddDays(-7).Date;
+            var fourWeeksFromStartOfWeek = startOfWeek.AddDays(-7*4);
+            var oneYearFromStartOfWeek = startOfWeek.AddYears(-1);
+
+            var oneWeekOld = new List<BakModel>();
+            var oneMonthOld = new List<BakModel>();
+            var monthsOld = new List<BakModel>();
+            var yearsOld = new List<BakModel>();
+
+            string databaseName = null;
 
             foreach (var backup in set)
             {
-                if (backup.Created > aWeekFromNow)
+                // Make sure there is only one database
+                if (databaseName != backup.DatabaseName)
                 {
-                    weekOldSets.Add(backup);
+                    if (databaseName != null && databaseName != backup.DatabaseName)
+                    {
+                        throw new ArgumentException("More than one database name in the set", "set");
+                    }
+
+                    databaseName = backup.DatabaseName;
                 }
-                else if(backup.Created > aMonthFromNow)
+
+                if (backup.Created.Date >= aWeekFromNow)
                 {
-                    monthOldSets.Add(backup);
+                    oneWeekOld.Add(backup);
+                }
+                else if (backup.Created.Date >= fourWeeksFromStartOfWeek && backup.Created.Date >= oneYearFromStartOfWeek)
+                {
+                    oneMonthOld.Add(backup);
+                }
+                else if(backup.Created.Date >= oneYearFromStartOfWeek.Date)
+                {
+                    monthsOld.Add(backup);
                 }
                 else
                 {
-                    yearOldSets.Add(backup);
+                    yearsOld.Add(backup);
                 }
             }
 
-            // Keep one week worth of backups
-            foreach (var backup in weekOldSets)
+            // Keep all backups made in the last 7 days
+            foreach (var backup in oneWeekOld)
             {
                 backup.Prunable = false;
             }
 
-            //// If we have at least one sunday
-            //if (monthOldSets.Count(x => x.Created.DayOfWeek == DayOfWeek.Sunday) > 0)
-            //{
-                foreach (var backup in monthOldSets)
-                {
-                    // Keep sundays only
-                    backup.Prunable = backup.Created.DayOfWeek != DayOfWeek.Sunday;
-                }
-            //}
+            var calendar = new JulianCalendar();
 
-            foreach (var backup in yearOldSets)
+            // Keep Sundays for a month after one week
+            var weekGrouping =
+                oneMonthOld.GroupBy(
+                    x =>
+                        new
+                        {
+                            x.Created.Year,
+                            WeekNumber = calendar.GetWeekOfYear(x.Created, CalendarWeekRule.FirstDay, DayOfWeek.Sunday)
+                        });
+            foreach (var week in weekGrouping)
             {
-                // Keep sundays only
-                backup.Prunable = backup.Created.DayOfWeek != DayOfWeek.Sunday;
+                if (week.Count() > 1)
+                {
+                    KeepFirstSundayOrKeepOne(week);
+                }
+                else
+                {
+                    week.First().Prunable = false;
+                }
             }
+
+            // Keep first sunday of month after one week for one year
+            var monthGrouping = monthsOld.GroupBy(x => new {x.Created.Year, x.Created.Month});
+            foreach (var month in monthGrouping)
+            {
+                if (month.Count() > 1)
+                {
+                    KeepFirstSundayOrKeepOne(month);
+                }
+                else
+                {
+                    month.First().Prunable = false;
+                }
+            }
+
+            // Keep first backup of each year after one year
+            var yearGrouping = yearsOld.GroupBy(x => new {x.Created.Year});
+            foreach (var year in yearGrouping)
+            {
+                if (year.Count() > 1)
+                {
+                    // Order year set ascending
+                    KeepFirstSundayOrKeepOne(year);
+                }
+                else
+                {
+                    // Last of ordered by DESC = first
+                    year.Last().Prunable = false;
+                }
+            }
+
+            // Make sur only the most recent backup of 'Keeper' days is kept.
+            KeepOnePerDay(set);
         }
     }
 }
