@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="BakFilenameExtractor.cs" />
     <Compile Include="Commands\PruneCommand.cs" />
+    <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="Interfaces\Services\IPruneService.cs" />
     <Compile Include="Interfaces\Services\IFileService.cs" />
     <Compile Include="Models\BakModel.cs" />
