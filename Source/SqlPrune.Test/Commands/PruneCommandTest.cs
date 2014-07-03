@@ -1,5 +1,10 @@
 ﻿using System;
-using Comsec.SqlPrune.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
+using Comsec.SqlPrune.Factories;
+using Comsec.SqlPrune.Interfaces.Services;
+using Comsec.SqlPrune.Models;
+using Moq;
 using NUnit.Framework;
 
 namespace Comsec.SqlPrune.Commands
@@ -16,15 +21,33 @@ namespace Comsec.SqlPrune.Commands
         }
 
         [Test]
-        public void TestExecuteWhenPathIsDirectory()
+        public void TestExecuteWhenPathNotSet()
         {
             Mock<IFileService>()
-                .Setup(call => call.IsDirectory(@"c:\sql-backups"))
-                .Returns(true);
-            
-            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups"});
+                .Setup(call => call.IsDirectory(@"c:\sql-backups\backup.bak"))
+                .Returns(false);
 
-            Assert.AreEqual(0, result);
+            var result = command.Execute(new PruneCommand.Options());
+
+            Mock<IFileService>()
+                .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
+
+            Assert.AreEqual(-1, result);
+        }
+
+        [Test]
+        public void TestExecuteWhenPathIsFlag()
+        {
+            Mock<IFileService>()
+                .Setup(call => call.IsDirectory(@"-verbose"))
+                .Returns(false);
+
+            var result = command.Execute(new PruneCommand.Options());
+
+            Mock<IFileService>()
+                .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
+
+            Assert.AreEqual(-1, result);
         }
 
         [Test]
@@ -34,9 +57,63 @@ namespace Comsec.SqlPrune.Commands
                 .Setup(call => call.IsDirectory(@"c:\sql-backups\backup.bak"))
                 .Returns(false);
 
-            var result = command.Execute(new PruneCommand.Options { Path = @"c:\sql-backups\backup.bak" });
+            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups\backup.bak"});
 
             Assert.AreEqual(-1, result);
         }
+
+        [Test]
+        public void TestExecuteWhenPathIsDirectoryButSimulationOnlys()
+        {
+            Mock<IFileService>()
+                .Setup(call => call.IsDirectory(@"c:\sql-backups"))
+                .Returns(true);
+
+            var files = new BakFileListFactory().WithDatabases("db1").Create(DateTime.Now, 2);
+
+            Mock<IFileService>()
+                .Setup(call => call.GetFiles(@"c:\sql-backups", "*.bak"))
+                .Returns(files);
+            
+            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups"});
+
+            Mock<IPruneService>()
+                .Verify(call => call.FlagPrunableBackupsInSet(It.Is<IEnumerable<BakModel>>(x => x.Count() == 2), It.IsAny<DateTime>()),
+                    Times.Once());
+            
+            Mock<IFileService>()
+                .Verify(call => call.Delete(It.IsAny<string>()), Times.Never());
+            
+            Assert.AreEqual(0, result);
+        }
+
+        [Test]
+        public void TestExecuteWhenPathIsDirectotyAndDeleteWithoutConfirmation()
+        {
+            Mock<IFileService>()
+                .Setup(call => call.IsDirectory(@"c:\sql-backups"))
+                .Returns(true);
+
+            var files = new BakFileListFactory().WithDatabases("db1").Create(DateTime.Now, 2);
+
+            Mock<IFileService>()
+                .Setup(call => call.GetFiles(@"c:\sql-backups", "*.bak"))
+                .Returns(files);
+
+            Mock<IPruneService>()
+                .Setup(call => call.FlagPrunableBackupsInSet(It.IsAny<IEnumerable<BakModel>>(), It.IsAny<DateTime>()))
+                .Callback<IEnumerable<BakModel>, DateTime>((x, y) => x.First().Prunable = true);
+
+            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups", Delete = true, NoConfirm = true});
+
+            Mock<IFileService>()
+                .Verify(call => call.Delete(It.IsAny<string>()), Times.Once());
+
+            Mock<IFileService>()
+                .Verify(call => call.Delete(files.First()), Times.Once());
+
+            Assert.AreEqual(0, result);
+        }
+        
     }
 }

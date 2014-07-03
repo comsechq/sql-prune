@@ -1,6 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
 
-namespace Comsec.SqlPrune.Interfaces
+namespace Comsec.SqlPrune.Interfaces.Services
 {
     /// <summary>
     /// Interface to wrap call to <see cref="System.IO.File" />
@@ -15,23 +15,22 @@ namespace Comsec.SqlPrune.Interfaces
         bool IsDirectory(string path);
 
         /// <summary>
-        /// Returns the names of files (including their paths) that match the specified 
-        /// search pattern in the specified directory, using a value to determine whether
-        /// to search subdirectories.
+        /// Returns the names of files (including their paths) that match the specified search pattern in the specified directory.
         /// </summary>
         /// <param name="dirPath">The directory to search.</param>
-        /// <param name="searchPattern">
-        /// The search string to match against the names of files in path. The parameter
-        /// cannot end in two periods ("..") or contain two periods ("..") followed by
-        /// System.IO.Path.DirectorySeparatorChar or System.IO.Path.AltDirectorySeparatorChar,
-        /// nor can it contain any of the characters in System.IO.Path.InvalidPathChars.</param>
-        /// <param name="option">
-        /// One of the enumeration values that specifies whether the search operation
-        /// should include all subdirectories or only the current directory.</param>
+        /// <param name="searchPattern">The search patter (e.g. "*.txt").</param>
         /// <returns>
-        /// An array of the full names (including paths) for the files in the specified
-        /// directory that match the specified search pattern and option.
+        /// A list of files.
         /// </returns>
-        string[] GetFiles(string dirPath, string searchPattern, SearchOption option);
+        /// <remarks>
+        /// System Files and Folders will be ignored
+        /// </remarks>
+        IList<string> GetFiles(string dirPath, string searchPattern);
+
+        /// <summary>
+        /// Deletes the specified file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        void Delete(string path);
     }
 }

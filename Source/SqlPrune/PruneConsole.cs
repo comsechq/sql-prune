@@ -20,6 +20,10 @@ namespace Comsec.SqlPrune
             ColorConsole.Write(ConsoleColor.White, "SQL Pruning Utility - v{0}", version);
             Console.WriteLine(" - Comsec Solutions Ltd - http://comsechq.com");
             Console.WriteLine();
+
+            ColorConsole.Write(ConsoleColor.Red, "WARNING: ");
+            Console.WriteLine("This program is designed to delete files from your computer. The authors do not accept liability for any errors or data-loss which could arise as a result of running this executable.");
+            Console.WriteLine();
         }
 
         /// <summary>
@@ -38,14 +42,13 @@ namespace Comsec.SqlPrune
             Console.WriteLine();
             Console.WriteLine("Usage:");
             Console.WriteLine();
-            Console.WriteLine("    sqlprune.exe [pathToFolder] [-delete]");
+            Console.WriteLine(" sqlprune.exe [pathToFolder] [-verbose] [-delete] [-no-confirm]");
             Console.WriteLine();
             Console.WriteLine(" pathToFolder: The path to your local folder containting .bak files (e.g. \"c:\\sql-backups\")");
-            Console.WriteLine("       delete: Unless this flag is present files will not be deleted");
+            Console.WriteLine("     -verbose: Makes the program chattier");
+            Console.WriteLine("      -delete: Unless this flag is present files will not be deleted");
+            Console.WriteLine("   -no-confim: You will have to confirm before any file is deleted unless this flag is present");
             Console.WriteLine();
-
-            ColorConsole.Write(ConsoleColor.Red, "WARNING: ");
-            Console.WriteLine("This program is designed to delete files from your computer. The authors do not accept liability for any errors or data-loss which could arise as a result of running this executable.");
 
             return (int) ExitCode.GeneralError;
         }

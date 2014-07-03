@@ -15,11 +15,9 @@ namespace Comsec.SqlPrune
         /// <param name="parameters">The parameters.</param>
         public static void Write(ConsoleColor color, string format, params object[] parameters)
         {
-            var previousForegroundColor = Console.ForegroundColor;
-
             Console.ForegroundColor = color;
             Console.Write(format, parameters);
-            Console.ForegroundColor = previousForegroundColor;
+            Console.ResetColor();
         }
 
     }

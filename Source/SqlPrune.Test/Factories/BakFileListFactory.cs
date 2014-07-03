@@ -19,6 +19,16 @@ namespace Comsec.SqlPrune.Factories
         }
 
         /// <summary>
+        /// Withes the database.
+        /// </summary>
+        /// <param name="databaseName">Name of the database.</param>
+        /// <returns></returns>
+        public BakFileListFactory WithDatabases(string databaseName)
+        {
+            return WithDatabases(new[] {databaseName});
+        }
+
+        /// <summary>
         /// Withes the databases.
         /// </summary>
         /// <param name="databaseNames">The database names.</param>

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using Comsec.SqlPrune.Interfaces;
 using Comsec.SqlPrune.Interfaces.Services;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Services;
@@ -18,6 +16,12 @@ namespace Comsec.SqlPrune.Commands
     {
         public class Options
         {
+            /// <summary>
+            /// Gets or sets the path (e.g. "e:" or "c:\backups").
+            /// </summary>
+            /// <value>
+            /// The path.
+            /// </value>
             [Parameter(0, Required = true)]
             public string Path { get; set; }
 
@@ -31,13 +35,22 @@ namespace Comsec.SqlPrune.Commands
             public bool Verbose { get; set; }
 
             /// <summary>
-            /// Gets or sets the destination directory.
+            /// Gets or sets a value indicating whether to delete files or just run a simulation.
             /// </summary>
             /// <value>
-            /// The db file path.
+            ///   <c>true</c> if delete; otherwise, <c>false</c>.
             /// </value>
             [Flag("delete")]
             public bool Delete { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether the user will have to [confirm] before any file is deleted.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [no confirm]; otherwise, <c>false</c>.
+            /// </value>
+            [Flag("no-confirm")]
+            public bool NoConfirm { get; set; }
         }
 
         #region Dependencies
@@ -79,7 +92,7 @@ namespace Comsec.SqlPrune.Commands
 
             if (string.IsNullOrEmpty(options.Path) || options.Path.StartsWith("-") || !FileService.IsDirectory(options.Path))
             {
-                Console.WriteLine("Invalid path: You must provide a path to a folder.");
+                Console.WriteLine("Invalid path: You must provide a path to an existing local folder or drive.");
 
                 return (int) ExitCode.GeneralError;
             }
@@ -87,7 +100,7 @@ namespace Comsec.SqlPrune.Commands
             Console.WriteLine("Listing all .bak files in folder {0} including subfolders...", options.Path);
             Console.WriteLine();
 
-            var paths = FileService.GetFiles(options.Path, "*.bak", SearchOption.AllDirectories);
+            var paths = FileService.GetFiles(options.Path, "*.bak");
 
             if (paths == null)
             {
@@ -96,7 +109,7 @@ namespace Comsec.SqlPrune.Commands
                 return (int) ExitCode.GeneralError;
             }
 
-            var files = new List<BakModel>(paths.Length);
+            var files = new List<BakModel>(paths.Count);
 
             foreach (var path in paths)
             {
@@ -107,7 +120,27 @@ namespace Comsec.SqlPrune.Commands
                 files.Add(model);
             }
 
-            Console.WriteLine("Found {0} file(s) out of which {1} have valid file names.", paths.Length, files.Count);
+            Console.WriteLine("Found {0} file(s) out of which {1} have valid file names.", paths.Count, files.Count);
+            Console.WriteLine();
+
+            if (options.Delete)
+            {
+                if (options.NoConfirm)
+                {
+                    ColorConsole.Write(ConsoleColor.Red, "DEFCON 1: ");
+                    Console.WriteLine("All prunable files will be deleted.");
+                }
+                else
+                {
+                    ColorConsole.Write(ConsoleColor.Yellow, "DEFCON 3: ");
+                    Console.WriteLine("Files will be deleted, but you'll have to confirm each deletion.");
+                }
+            }
+            else
+            {
+                ColorConsole.Write(ConsoleColor.Green, "DEFCON 5: ");
+                Console.WriteLine("Simulation only, no files will be deleted.");
+            }
             Console.WriteLine();
 
             var backupSets = files.GroupBy(x => x.DatabaseName);
@@ -118,32 +151,55 @@ namespace Comsec.SqlPrune.Commands
 
                 if (options.Verbose)
                 {
-                    ColorConsole.Write(ConsoleColor.White, " {0}:", databaseBakupSet.Key);
+                    ColorConsole.Write(ConsoleColor.White, "{0}:", databaseBakupSet.Key);
                     Console.WriteLine();
                     ColorConsole.Write(ConsoleColor.DarkGray, " Created\t\tStatus\t\tPath");
                     Console.WriteLine();
-                    foreach (var model in databaseBakupSet)
-                    {
-                        Console.Write(" {0}\t", model.Created.ToString("yyyyMMddTHHmmss", CultureInfo.InvariantCulture));
+                }
 
-                        if (!model.Prunable.HasValue)
+                foreach (var model in databaseBakupSet)
+                {
+                    Console.Write(" {0}\t", model.Created.ToString("yyyyMMddTHHmmss", CultureInfo.InvariantCulture));
+
+                    if (!model.Prunable.HasValue)
+                    {
+                        Console.Write(model.Status);
+                    }
+                    else if (model.Prunable.Value)
+                    {
+                        ColorConsole.Write(ConsoleColor.DarkRed, model.Status);
+                    }
+                    else
+                    {
+                        ColorConsole.Write(ConsoleColor.DarkGreen, model.Status);
+                    }
+                    Console.Write("\t\t");
+
+                    Console.Write(model.Path);
+                        
+                    Console.WriteLine();
+
+                    if (model.Prunable.HasValue && model.Prunable.Value && options.Delete)
+                    {
+                        var prompt = string.Format("Delete {0}?", model.Path);
+
+                        var delete = options.NoConfirm || Confirm.Prompt(prompt, "y");
+
+                        if (delete)
                         {
-                            Console.Write(model.Status);
-                        }
-                        else if (model.Prunable.Value)
-                        {
-                            ColorConsole.Write(ConsoleColor.DarkRed, model.Status);
+                            FileService.Delete(model.Path);
+                            ColorConsole.Write(ConsoleColor.Red, "Deleted ");
                         }
                         else
                         {
-                            ColorConsole.Write(ConsoleColor.DarkGreen, model.Status);
+                            ColorConsole.Write(ConsoleColor.DarkGreen, "Skipped ");
                         }
-                        Console.Write("\t\t");
-
-                        Console.Write(model.Path);
-                        
-                        Console.WriteLine();
+                        Console.WriteLine(model.Path);
                     }
+                }
+
+                if (options.Verbose)
+                {
                     Console.WriteLine();
                 }
             }

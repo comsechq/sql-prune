@@ -86,11 +86,6 @@ namespace Comsec.SqlPrune.Services
             }
         }
 
-        public void KeepFirstSundayOfYear(IEnumerable<BakModel> set)
-        {
-            
-        }
-
         /// <summary>
         /// Sets prunable backups in set.
         /// </summary>

@@ -25,11 +25,12 @@ The utility relies on the date *in the file name*, **not** the file system's cre
 
 #### Usage:
 
-    sqlprune.exe [pathToFolder] [-delete] [-verbose]
+    sqlprune.exe [pathToFolder] [-verbose] [-delete] [-no-confirm]
 
  * __pathToFolder__ The path to your local folder containting .bak files (e.g. "c:\sql-backups")
- * __delete__ Unless this flag is present files will not be deleted
- * __verbose__ Output more to the standard output
+ * __-verbose__ Writes more information to the standard output
+ * __-delete__ Unless this flag is present files will not be deleted
+ * __-no-confim__ You will have to confirm before any file is deleted unless this flag is present
 
 #### Todo:
 
@@ -38,7 +39,7 @@ The utility relies on the date *in the file name*, **not** the file system's cre
 #### Download & Install:
 
 1. Find the [latest release](https://github.com/comsechq/sql-prune/releases).
-2. Extract the zip in a folder
+2. Extract the zip in a folder.
 3. Run the command from the command line prompt.
 
 #### Disclaimer
