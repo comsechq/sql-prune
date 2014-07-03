@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Comsec.SqlPrune.Interfaces;
 
 namespace Comsec.SqlPrune.Services
@@ -38,9 +39,13 @@ namespace Comsec.SqlPrune.Services
         /// An array of the full names (including paths) for the files in the specified
         /// directory that match the specified search pattern and option.
         /// </returns>
+        /// <remarks>System Files and Folders will be ignored</remarks>
         public string[] GetFiles(string dirPath, string searchPattern, SearchOption option)
         {
             string[] result = null;
+
+            // TODO: Do the reccuring search manually to silently ignore the system files
+            // http://stackoverflow.com/questions/172544/ignore-folders-files-when-directory-getfiles-is-denied-access/172575#172575
 
             try
             {

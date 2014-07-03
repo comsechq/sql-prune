@@ -27,16 +27,14 @@ namespace Comsec.SqlPrune
         /// </summary>
         public override int Default()
         {
-            var previousColor = Console.ForegroundColor;
-
             OutputVersion();
 
             Console.WriteLine("A simple utility to to prune MS-SQL backup files from a given folder.");
             Console.WriteLine();
             Console.Write("Get more information or contribute on github: ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("https://github.com/comsechq/sql-prune");
-            Console.ForegroundColor = previousColor;
+            
+            ColorConsole.Write(ConsoleColor.White, "https://github.com/comsechq/sql-prune");
+            Console.WriteLine();
             Console.WriteLine();
             Console.WriteLine("Usage:");
             Console.WriteLine();
@@ -44,7 +42,11 @@ namespace Comsec.SqlPrune
             Console.WriteLine();
             Console.WriteLine(" pathToFolder: The path to your local folder containting .bak files (e.g. \"c:\\sql-backups\")");
             Console.WriteLine("       delete: Unless this flag is present files will not be deleted");
-            
+            Console.WriteLine();
+
+            ColorConsole.Write(ConsoleColor.Red, "WARNING: ");
+            Console.WriteLine("This program is designed to delete files from your computer. The authors do not accept liability for any errors or data-loss which could arise as a result of running this executable.");
+
             return (int) ExitCode.GeneralError;
         }
     }

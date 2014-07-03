@@ -40,3 +40,7 @@ The utility relies on the date *in the file name*, **not** the file system's cre
 1. Find the [latest release](https://github.com/comsechq/sql-prune/releases).
 2. Extract the zip in a folder
 3. Run the command from the command line prompt.
+
+#### Disclaimer
+
+**WARNING**: This program is designed to delete files from your computer. The authors of this program do not accept liability for any errors or data-loss which could arise as a result of it.
