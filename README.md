@@ -58,4 +58,4 @@ _If your web browser doesn't have access to you local file system (e.g. Chrome) 
 
 Example:
 
-![alt tag](https://raw.github.com/comsechq/sql-prune/branch/master/unit-test-output-example.png)
+![alt tag](https://raw.githubusercontent.com/comsechq/sql-prune/master/unit-test-output-example.png)
