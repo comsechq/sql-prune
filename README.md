@@ -4,6 +4,10 @@ A simple utility written in .NET to to prune MS-SQL backup files from a given fo
 
 The program lists all Microsoft SQL Server `.bak` files in a given folder and determines which one to keep and which ones to prune.
 
+#### Disclaimer
+
+**WARNING**: This program is designed to delete files from your computer. The authors of this program do not accept liability for any errors or data-loss which could arise as a result of it.
+
 #### Pruning Rules
 
 1. Keep one week of daily backups
@@ -42,6 +46,16 @@ The utility relies on the date *in the file name*, **not** the file system's cre
 2. Extract the zip in a folder.
 3. Run the command from the command line prompt.
 
-#### Disclaimer
+#### Unit Testing
 
-**WARNING**: This program is designed to delete files from your computer. The authors of this program do not accept liability for any errors or data-loss which could arise as a result of it.
+Veryfying which date should be kept or pruned is a tedious task. 
+
+We modified an [SVG visualiser](http://bl.ocks.org/mbostock/4063318) to ouput renders the output of the unit tests into familiar calendar view.
+
+After you run the unit tests in `PruneServiceTest`, open `Calendar.html` in a modern web browser.
+
+_If your web browser doesn't have access to you local file system (e.g. Chrome) it will refuse to load the .json file._
+
+Example:
+
+![alt tag](https://raw.github.com/comsechq/sql-prune/branch/master/unit-test-output-example.png)
