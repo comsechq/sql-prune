@@ -24,6 +24,10 @@ namespace Comsec.SqlPrune.Services
 
                 return (pathAttributes & FileAttributes.Directory) == FileAttributes.Directory;
             }
+            catch(DirectoryNotFoundException e)
+            {
+                Console.WriteLine(e.Message);
+            }
             catch(FileNotFoundException e)
             {
                 Console.WriteLine(e.Message);
