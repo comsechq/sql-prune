@@ -132,15 +132,13 @@ namespace Comsec.SqlPrune.Services
         [Test]
         public void TestPruneBackupSetWhenMoreThanOneDatabaseNameInSet()
         {
-            var now = DateTime.Now;
-
             var set = new List<BakModel>
                       {
-                          new BakModel {DatabaseName = "db1"},
-                          new BakModel {DatabaseName = "db2"}
+                          new BakModel {DatabaseName = "db1", Created = new DateTime(2014, 7, 18, 9, 51, 0)},
+                          new BakModel {DatabaseName = "db2", Created = new DateTime(2014, 7, 17, 9, 40, 0)}
                       };
 
-            Assert.Throws<ArgumentException>(() => service.FlagPrunableBackupsInSet(set, now));
+            Assert.Throws<ArgumentException>(() => service.FlagPrunableBackupsInSet(set));
         }
 
         /// <summary>
@@ -198,17 +196,15 @@ namespace Comsec.SqlPrune.Services
         [Test]
         public void TestPruneBackupSetWhenFirstRun()
         {
-            var now = new DateTime(2014, 6, 27, 11, 54, 10);
+            var backupSet = GenerateBackupSet(new DateTime(2014, 6, 27, 11, 54, 10), 1500);
 
-            var backupSet = GenerateBackupSet(now, 1500);
-
-            service.FlagPrunableBackupsInSet(backupSet, now);
+            service.FlagPrunableBackupsInSet(backupSet);
 
             RenderPrunedData(backupSet);
 
             Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
-            Assert.AreEqual(27, backupSet.Count(x => !x.Prunable.Value));
-            Assert.AreEqual(1473, backupSet.Count(x => x.Prunable.Value));
+            Assert.AreEqual(28, backupSet.Count(x => !x.Prunable.Value));
+            Assert.AreEqual(1472, backupSet.Count(x => x.Prunable.Value));
 
             // Year
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2010, 5, 23)).Prunable.Value);
@@ -243,6 +239,7 @@ namespace Comsec.SqlPrune.Services
 
             //// Week
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 20)).Prunable.Value);
+            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 20)).Prunable.Value);
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 21)).Prunable.Value);
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 22)).Prunable.Value);
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 23)).Prunable.Value);
@@ -258,7 +255,7 @@ namespace Comsec.SqlPrune.Services
 
             var backupSet = GenerateBackupSet(before, 1500);
 
-            service.FlagPrunableBackupsInSet(backupSet, before);
+            service.FlagPrunableBackupsInSet(backupSet);
 
             backupSet.RemoveAll(x => x.Prunable == true);
 
@@ -268,12 +265,12 @@ namespace Comsec.SqlPrune.Services
 
             backupSet.AddRange(newBackups);
 
-            service.FlagPrunableBackupsInSet(backupSet, now);
+            service.FlagPrunableBackupsInSet(backupSet);
 
             RenderPrunedData(backupSet);
 
             Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
-            Assert.AreEqual(27, backupSet.Count(x => !x.Prunable.Value));
+            Assert.AreEqual(28, backupSet.Count(x => !x.Prunable.Value));
             Assert.AreEqual(43, backupSet.Count(x => x.Prunable.Value));
 
             // Year
@@ -302,6 +299,7 @@ namespace Comsec.SqlPrune.Services
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 27)).Prunable.Value);
 
             //// Week
+            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 1)).Prunable.Value);
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 2)).Prunable.Value);
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 3)).Prunable.Value);
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 4)).Prunable.Value);
@@ -357,8 +355,6 @@ namespace Comsec.SqlPrune.Services
             Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 29)).Prunable.Value);
             Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 30)).Prunable.Value);
             Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 31)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 1)).Prunable.Value);
-
         }
 
         [Test]
@@ -368,7 +364,7 @@ namespace Comsec.SqlPrune.Services
 
             var backupSet = GenerateBackupSet(before, 1500);
 
-            service.FlagPrunableBackupsInSet(backupSet, before);
+            service.FlagPrunableBackupsInSet(backupSet);
 
             backupSet.RemoveAll(x => x.Prunable == true);
 
@@ -378,11 +374,11 @@ namespace Comsec.SqlPrune.Services
 
             backupSet.AddRange(newBackups);
 
-            service.FlagPrunableBackupsInSet(backupSet, now);
+            service.FlagPrunableBackupsInSet(backupSet);
 
             Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
             Assert.AreEqual(27, backupSet.Count(x => !x.Prunable.Value));
-            Assert.AreEqual(191, backupSet.Count(x => x.Prunable.Value));
+            Assert.AreEqual(192, backupSet.Count(x => x.Prunable.Value));
 
             RenderPrunedData(backupSet);
         }
@@ -394,7 +390,7 @@ namespace Comsec.SqlPrune.Services
 
             var backupSet = GenerateBackupSet(now, 60);
 
-            service.FlagPrunableBackupsInSet(backupSet, now);
+            service.FlagPrunableBackupsInSet(backupSet);
 
             Assert.IsFalse(backupSet[0].Prunable.Value);
 
@@ -402,7 +398,7 @@ namespace Comsec.SqlPrune.Services
 
             backupSet.Add(duplicate);
             
-            service.FlagPrunableBackupsInSet(backupSet, now);
+            service.FlagPrunableBackupsInSet(backupSet);
 
             Assert.IsTrue(backupSet[0].Prunable.Value);
             Assert.IsFalse(duplicate.Prunable.Value);
@@ -417,7 +413,7 @@ namespace Comsec.SqlPrune.Services
 
             backupSet.Add(new BakModel { DatabaseName = "db1", Created = new DateTime(2013, 12, 31, 22, 30, 5) });
 
-            service.FlagPrunableBackupsInSet(backupSet, now);
+            service.FlagPrunableBackupsInSet(backupSet);
 
             Assert.IsTrue(backupSet.Last().Prunable.Value);
         }

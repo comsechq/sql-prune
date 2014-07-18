@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Comsec.SqlPrune.Models;
 
 namespace Comsec.SqlPrune.Interfaces.Services
@@ -13,8 +12,6 @@ namespace Comsec.SqlPrune.Interfaces.Services
         /// Sets prunable backups in set.
         /// </summary>
         /// <param name="set">The set of backups for a given database.</param>
-        /// <param name="now">The current date and time.</param>
-        /// <returns></returns>
-        void FlagPrunableBackupsInSet(IEnumerable<BakModel> set, DateTime now);
+        void FlagPrunableBackupsInSet(IEnumerable<BakModel> set);
     }
 }

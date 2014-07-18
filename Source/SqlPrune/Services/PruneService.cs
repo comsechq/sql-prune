@@ -90,16 +90,28 @@ namespace Comsec.SqlPrune.Services
         /// Sets prunable backups in set.
         /// </summary>
         /// <param name="set">The set of backups for a given database.</param>
-        /// <param name="now">The current date and time.</param>
         /// <returns></returns>
-        public void FlagPrunableBackupsInSet(IEnumerable<BakModel> set, DateTime now)
+        public void FlagPrunableBackupsInSet(IEnumerable<BakModel> set)
         {
+            // Ignore set with 0 or 1 entries
+            if (set.Count() < 2)
+            {
+                foreach (var backup in set)
+                {
+                    backup.Prunable = false;
+                }
+
+                return;
+            }
+            
             // Make sure the set is ordered (and most recent first)
             set = set.OrderByDescending(x => x.Created);
 
-            var startOfWeek = now.Date.StartOfWeek(DayOfWeek.Sunday);
+            var mostRecentBackupDate = set.First().Created;
 
-            var aWeekFromNow = now.AddDays(-7).Date;
+            var startOfWeek = mostRecentBackupDate.Date.StartOfWeek(DayOfWeek.Sunday);
+
+            var aWeekFromNow = mostRecentBackupDate.AddDays(-7).Date;
             var fourWeeksFromStartOfWeek = startOfWeek.AddDays(-7*4);
             var oneYearFromStartOfWeek = startOfWeek.AddYears(-1);
 

@@ -78,7 +78,7 @@ namespace Comsec.SqlPrune.Commands
             var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups"});
 
             Mock<IPruneService>()
-                .Verify(call => call.FlagPrunableBackupsInSet(It.Is<IEnumerable<BakModel>>(x => x.Count() == 2), It.IsAny<DateTime>()),
+                .Verify(call => call.FlagPrunableBackupsInSet(It.Is<IEnumerable<BakModel>>(x => x.Count() == 2)),
                     Times.Once());
             
             Mock<IFileService>()
@@ -101,8 +101,8 @@ namespace Comsec.SqlPrune.Commands
                 .Returns(files);
 
             Mock<IPruneService>()
-                .Setup(call => call.FlagPrunableBackupsInSet(It.IsAny<IEnumerable<BakModel>>(), It.IsAny<DateTime>()))
-                .Callback<IEnumerable<BakModel>, DateTime>((x, y) => x.First().Prunable = true);
+                .Setup(call => call.FlagPrunableBackupsInSet(It.IsAny<IEnumerable<BakModel>>()))
+                .Callback<IEnumerable<BakModel>>((x) => x.First().Prunable = true);
 
             var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups", Delete = true, NoConfirm = true});
 

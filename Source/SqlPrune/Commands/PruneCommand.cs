@@ -147,15 +147,15 @@ namespace Comsec.SqlPrune.Commands
 
             foreach (var databaseBakupSet in backupSets)
             {
-                PruneService.FlagPrunableBackupsInSet(databaseBakupSet, DateTime.Now);
+                PruneService.FlagPrunableBackupsInSet(databaseBakupSet);
 
                 if (options.Verbose)
                 {
                     ColorConsole.Write(ConsoleColor.White, "{0}:", databaseBakupSet.Key);
                     Console.WriteLine();
-                    ColorConsole.Write(ConsoleColor.DarkGray, " Created\t\tStatus\t\tPath");
-                    Console.WriteLine();
                 }
+                ColorConsole.Write(ConsoleColor.DarkGray, " Created\t\tStatus\t\tPath");
+                Console.WriteLine();
 
                 foreach (var model in databaseBakupSet)
                 {
