@@ -151,7 +151,7 @@ namespace Comsec.SqlPrune.Commands
 
                 if (options.Verbose)
                 {
-                    ColorConsole.Write(ConsoleColor.White, "{0}:", databaseBakupSet.Key);
+                    ColorConsole.Write(ConsoleColor.White, " {0}:", databaseBakupSet.Key);
                     Console.WriteLine();
                 }
                 ColorConsole.Write(ConsoleColor.DarkGray, " Created\t\tStatus\t\tPath");

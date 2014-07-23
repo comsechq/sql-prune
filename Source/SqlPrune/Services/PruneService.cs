@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using Comsec.SqlPrune.Interfaces.Services;
 using Comsec.SqlPrune.Models;
-using Sugar;
 
 namespace Comsec.SqlPrune.Services
 {
