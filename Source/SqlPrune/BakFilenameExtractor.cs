@@ -17,20 +17,20 @@ namespace Comsec.SqlPrune
         /// - the database name
         /// - the date the file was created.
         /// </summary>
-        /// <param name="filePath">The competed file path (path + filename).</param>
-        /// <param name="databaseName">The name of the database.</param>
-        /// <param name="created">The creation date and time of the file (extracted from the file name).</param>
+        /// <param name="filename">The database filename (e.g. "db1_backup_2010_11_20_010203_1234567.bak").</param>
+        /// <param name="databaseName">The name of the database (extracted form the <see cref="filename"/>).</param>
+        /// <param name="created">The creation date and time of the file (extracted from the <see cref="filename"/>).</param>
         /// <returns></returns>
-        public static bool ValidateFilenameAndExtract(string filePath, out string databaseName, out DateTime created)
+        public static bool ValidateFilenameAndExtract(string filename, out string databaseName, out DateTime created)
         {
             var isValid = false;
 
             databaseName = null;
             created = new DateTime();
 
-            if (!string.IsNullOrEmpty(filePath) && filePath.EndsWith(".bak", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(filename) && filename.EndsWith(".bak", StringComparison.OrdinalIgnoreCase))
             {
-                var fileName = filePath.SubstringAfterLastChar(@"\");
+                var fileName = filename.SubstringAfterLastChar(@"\");
 
                 var numberOfUnderscores = fileName.Count(x => x == '_');
 

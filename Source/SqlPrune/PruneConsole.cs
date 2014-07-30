@@ -22,7 +22,7 @@ namespace Comsec.SqlPrune
             Console.WriteLine();
 
             ColorConsole.Write(ConsoleColor.Red, "WARNING: ");
-            Console.WriteLine("This program is designed to delete files from your computer. The authors do not accept liability for any errors or data-loss which could arise as a result of running this executable.");
+            Console.WriteLine("This program is designed to delete files. The authors do not accept liability for any errors or data-loss which could arise as a result of running this executable.");
             Console.WriteLine();
         }
 
@@ -33,7 +33,7 @@ namespace Comsec.SqlPrune
         {
             OutputVersion();
 
-            Console.WriteLine("A simple utility to to prune MS-SQL backup files from a given folder.");
+            Console.WriteLine("A simple utility to to prune MS-SQL backup files from a given folder or Amazon S3 bucket.");
             Console.WriteLine();
             Console.Write("Get more information or contribute on github: ");
             
@@ -42,12 +42,12 @@ namespace Comsec.SqlPrune
             Console.WriteLine();
             Console.WriteLine("Usage:");
             Console.WriteLine();
-            Console.WriteLine(" sqlprune.exe [pathToFolder] [-verbose] [-delete] [-no-confirm]");
+            Console.WriteLine(" sqlprune.exe [path] [-verbose] [-delete] [-no-confirm]");
             Console.WriteLine();
-            Console.WriteLine(" pathToFolder: The path to your local folder containting .bak files (e.g. \"c:\\sql-backups\")");
-            Console.WriteLine("     -verbose: Makes the program chattier");
-            Console.WriteLine("      -delete: Unless this flag is present files will not be deleted");
-            Console.WriteLine("   -no-confim: You will have to confirm before any file is deleted unless this flag is present");
+            Console.WriteLine("       path: The path to a local folder or an S3 bucket containting .bak files (e.g. \"c:\\sql-backups\" or \"s3://bucket-name/backups\")");
+            Console.WriteLine("   -verbose: Makes the program chattier");
+            Console.WriteLine("    -delete: Unless this flag is present files will not be deleted");
+            Console.WriteLine(" -no-confim: You will have to confirm before any file is deleted unless this flag is present");
             Console.WriteLine();
 
             return (int) ExitCode.GeneralError;

@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK">
+      <HintPath>..\packages\AWSSDK.2.2.1.0\lib\net45\AWSSDK.dll</HintPath>
+    </Reference>
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
     </Reference>
@@ -60,6 +63,8 @@
     <Compile Include="Factories\BakFileListFactoryTest.cs" />
     <Compile Include="Models\DateModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\Providers\LocalFilesystemProviderTest.cs" />
+    <Compile Include="Services\Providers\S3ProviderTest.cs" />
     <Compile Include="Services\PruneServiceTest.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -69,6 +74,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
     <None Include="prune-test-data.json" />
   </ItemGroup>

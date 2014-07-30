@@ -42,14 +42,7 @@ namespace Comsec.SqlPrune
                 if (
                     info.PropertyType.Name.StartsWith("I") &&
                     (
-                        info.PropertyType.Name.EndsWith("Service") |
-                        info.PropertyType.Name.EndsWith("Repository") |
-                        info.PropertyType.Name.EndsWith("Scraper") |
-                        info.PropertyType.Name.EndsWith("Validator") |
-                        info.PropertyType.Name.EndsWith("Loader") |
-                        info.PropertyType.Name.EndsWith("Bank") |
-                        info.PropertyType.Name.EndsWith("Extractor") |
-                        info.PropertyType.Name.EndsWith("Strategy")
+                        info.PropertyType.Name.EndsWith("Service")
                     )
                 )
                 {

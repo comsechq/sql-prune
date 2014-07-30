@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Comsec.SqlPrune.Interfaces.Services;
+using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Services;
+using Comsec.SqlPrune.Services.Providers;
 using Sugar.Command;
 
 namespace Comsec.SqlPrune.Commands
@@ -61,7 +63,7 @@ namespace Comsec.SqlPrune.Commands
         /// <value>
         /// The file service.
         /// </value>
-        public IFileService FileService { get; set; }
+        public IFileProvider[] FileProviders { get; set; }
 
         /// <summary>
         /// Gets or sets the prune service.
@@ -78,7 +80,12 @@ namespace Comsec.SqlPrune.Commands
         /// </summary>
         public PruneCommand()
         {
-            FileService = new FileService();
+            FileProviders = new IFileProvider[]
+                            {
+                                new S3Provider(),
+                                new LocalFileSystemProvider()
+                            };
+
             PruneService = new PruneService();
         }
 
@@ -90,7 +97,17 @@ namespace Comsec.SqlPrune.Commands
         {
             PruneConsole.OutputVersion();
 
-            if (string.IsNullOrEmpty(options.Path) || options.Path.StartsWith("-") || !FileService.IsDirectory(options.Path))
+            var provider = FileProviders.FirstOrDefault(p => p.ShouldRun(options.Path));
+
+            if (provider == null)
+            {
+                Console.WriteLine("Unrecognised path. You must provide a path to a local folder or to an Amazon S3 bucket.");
+                Console.WriteLine(@"Example: x:\path\to\folder or s3://bucket-name/optionally/with/path/folder");
+
+                return (int) ExitCode.GeneralError;
+            }
+
+            if (string.IsNullOrEmpty(options.Path) || options.Path.StartsWith("-") || !provider.IsDirectory(options.Path))
             {
                 Console.WriteLine("Invalid path: You must provide a path to an existing local folder or drive.");
 
@@ -100,7 +117,7 @@ namespace Comsec.SqlPrune.Commands
             Console.WriteLine("Listing all .bak files in folder {0} including subfolders...", options.Path);
             Console.WriteLine();
 
-            var paths = FileService.GetFiles(options.Path, "*.bak");
+            var paths = provider.GetFiles(options.Path, "*.bak");
 
             if (paths == null)
             {
@@ -187,7 +204,7 @@ namespace Comsec.SqlPrune.Commands
 
                         if (delete)
                         {
-                            FileService.Delete(model.Path);
+                            provider.Delete(model.Path);
                             ColorConsole.Write(ConsoleColor.Red, "Deleted ");
                         }
                         else
