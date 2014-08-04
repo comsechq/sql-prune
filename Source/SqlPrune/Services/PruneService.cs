@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Globalization;
 using System.Linq;
+using Amazon.Redshift.Model;
 using Comsec.SqlPrune.Interfaces.Services;
 using Comsec.SqlPrune.Models;
 
@@ -52,32 +54,88 @@ namespace Comsec.SqlPrune.Services
         }
 
         /// <summary>
-        /// Marks the the first sunday of the set as not prunable (or keep first backup in set if no sunday).
+        /// Marks the the n matched day of the set as not prunable (or keep first backup in set if no matching day).
         /// </summary>
         /// <param name="set">The set.</param>
-        public void KeepFirstSundayOrKeepOne(IEnumerable<BakModel> set)
+        /// <param name="dayOfWeekToKeep">The day of week to keep.</param>
+        /// <param name="weekNumberToKeepFromFirstOccurence">The occurence to keep (e.g. 0 to keep the first match).</param>
+        public void KeepDayOccurences(IEnumerable<BakModel> set, DayOfWeek dayOfWeekToKeep, int weekNumberToKeepFromFirstOccurence)
         {
-            // Oldest first (Created Ascending)
-            var bakModels = set.OrderBy(x => x.Created)
-                               .ToArray();
+            KeepDayOccurences(set, dayOfWeekToKeep, new[] {weekNumberToKeepFromFirstOccurence});
+        }
 
-            if (bakModels.Count(x => x.Created.DayOfWeek == DayOfWeek.Sunday) > 1)
+        /// <summary>
+        /// Marks the the n matched day of the set as not prunable (or keep first backup in set if no matching day).
+        /// </summary>
+        /// <param name="set">The set.</param>
+        /// <param name="dayOfWeekToKeep">The day of week to keep (e.g. Sunday).</param>
+        /// <param name="weekNumberToKeepFromFirstOccurence">The occurences to keep (e.g. for 1st and 3nd week: "new []{ 0, 2}").</param>
+        public void KeepDayOccurences(IEnumerable<BakModel> set, DayOfWeek dayOfWeekToKeep, int[] weekNumberToKeepFromFirstOccurence)
+        {
+            var processableBackupsInSet = new List<BakModel>();
+
+            // Group by day an only keep most recent backup for each day
+            foreach (var dayGrouping in set.GroupBy(x => x.Created.Date))
             {
-                var sundayCount = 0;
+                if (dayGrouping.Count() == 1)
+                {
+                    processableBackupsInSet.AddRange(dayGrouping);
+                }
+                else
+                {
+                    var index = 0;
+
+                    foreach (var bak in dayGrouping.OrderByDescending(x => x.Created))
+                    {
+                        if (index == 0)
+                        {
+                            processableBackupsInSet.Add(bak);
+                        }
+                        else
+                        {
+                            // Prune backups in day that are not the most recent and ignore them for the following step
+                            bak.Prunable = true;
+                        }
+                        
+                        index++;
+                    }
+                }
+            }
+
+            // Oldest first (Created Ascending)
+            var bakModels = processableBackupsInSet.OrderBy(x => x.Created)
+                                                   .ToArray();
+
+            var numberOfOccurrences = bakModels.Count(x => x.Created.DayOfWeek == dayOfWeekToKeep);
+
+            if (numberOfOccurrences > 1)
+            {
+                DateTime? firstMatchCreationDate = null;
 
                 foreach (var bak in bakModels)
                 {
-                    if (bak.Created.DayOfWeek == DayOfWeek.Sunday && sundayCount == 0)
+                    if (bak.Created.DayOfWeek == dayOfWeekToKeep)
                     {
-                        bak.Prunable = false;
-                        sundayCount++;
+                        var numberOfWeeksSinceLastMatch = 0;
+
+                        if (firstMatchCreationDate.HasValue)
+                        {
+                            var deltaDays = (bak.Created.Date - firstMatchCreationDate.Value.Date).Days;
+
+                            numberOfWeeksSinceLastMatch = deltaDays / 7;
+                        }
+                        else
+                        {
+                            firstMatchCreationDate = bak.Created;
+                        }
+
+                        bak.Prunable = !(weekNumberToKeepFromFirstOccurence.Contains(numberOfWeeksSinceLastMatch));
                     }
                     else
                     {
                         bak.Prunable = true;
                     }
                 }
-
             }
             else
             {
@@ -110,14 +168,14 @@ namespace Comsec.SqlPrune.Services
 
             var startOfWeek = mostRecentBackupDate.Date.StartOfWeek(DayOfWeek.Sunday);
 
-            var aWeekFromNow = mostRecentBackupDate.AddDays(-7).Date;
-            var fourWeeksFromStartOfWeek = startOfWeek.AddDays(-7*4);
-            var oneYearFromStartOfWeek = startOfWeek.AddYears(-1);
+            var twoWeeksFromStart = mostRecentBackupDate.AddDays(-2 * 7).Date;
+            var eightWeeksFromStart = startOfWeek.AddDays(-2 * 4 * 7).Date;
+            var fiftyTwoWeeksFromStart = startOfWeek.AddDays(-52 * 7).Date;
 
-            var oneWeekOld = new List<BakModel>();
-            var oneMonthOld = new List<BakModel>();
-            var monthsOld = new List<BakModel>();
-            var yearsOld = new List<BakModel>();
+            var keepOneDaily = new List<BakModel>();
+            var keepFirstSundayWeekly = new List<BakModel>();
+            var keepFirstAndThridSundayMonthly = new List<BakModel>();
+            var keepFirstSundayYearly = new List<BakModel>();
 
             string databaseName = null;
 
@@ -134,35 +192,35 @@ namespace Comsec.SqlPrune.Services
                     databaseName = backup.DatabaseName;
                 }
 
-                if (backup.Created.Date >= aWeekFromNow)
+                if (backup.Created.Date >= twoWeeksFromStart)
                 {
-                    oneWeekOld.Add(backup);
+                    keepOneDaily.Add(backup);
                 }
-                else if (backup.Created.Date >= fourWeeksFromStartOfWeek && backup.Created.Date >= oneYearFromStartOfWeek)
+                else if (backup.Created.Date >= eightWeeksFromStart && backup.Created.Date >= fiftyTwoWeeksFromStart)
                 {
-                    oneMonthOld.Add(backup);
+                    keepFirstSundayWeekly.Add(backup);
                 }
-                else if(backup.Created.Date >= oneYearFromStartOfWeek.Date)
+                else if(backup.Created.Date >= fiftyTwoWeeksFromStart.Date)
                 {
-                    monthsOld.Add(backup);
+                    keepFirstAndThridSundayMonthly.Add(backup);
                 }
                 else
                 {
-                    yearsOld.Add(backup);
+                    keepFirstSundayYearly.Add(backup);
                 }
             }
 
             // Keep all backups made in the last 7 days
-            foreach (var backup in oneWeekOld)
+            foreach (var backup in keepOneDaily)
             {
                 backup.Prunable = false;
             }
 
             var calendar = new JulianCalendar();
 
-            // Keep Sundays for a month after one week
+            // Keep Sundays for a month
             var weekGrouping =
-                oneMonthOld.GroupBy(
+                keepFirstSundayWeekly.GroupBy(
                     x =>
                         new
                         {
@@ -173,7 +231,7 @@ namespace Comsec.SqlPrune.Services
             {
                 if (week.Count() > 1)
                 {
-                    KeepFirstSundayOrKeepOne(week);
+                    KeepDayOccurences(week, DayOfWeek.Sunday, 0);
                 }
                 else
                 {
@@ -181,13 +239,13 @@ namespace Comsec.SqlPrune.Services
                 }
             }
 
-            // Keep first sunday of month after one week for one year
-            var monthGrouping = monthsOld.GroupBy(x => new {x.Created.Year, x.Created.Month});
+            // Keep first and third Sunday of month
+            var monthGrouping = keepFirstAndThridSundayMonthly.GroupBy(x => new {x.Created.Year, x.Created.Month});
             foreach (var month in monthGrouping)
             {
                 if (month.Count() > 1)
                 {
-                    KeepFirstSundayOrKeepOne(month);
+                    KeepDayOccurences(month, DayOfWeek.Sunday, new[] {0, 2});
                 }
                 else
                 {
@@ -195,14 +253,14 @@ namespace Comsec.SqlPrune.Services
                 }
             }
 
-            // Keep first backup of each year after one year
-            var yearGrouping = yearsOld.GroupBy(x => new {x.Created.Year});
+            // Keep first backup of each year
+            var yearGrouping = keepFirstSundayYearly.GroupBy(x => new {x.Created.Year});
             foreach (var year in yearGrouping)
             {
                 if (year.Count() > 1)
                 {
                     // Order year set ascending
-                    KeepFirstSundayOrKeepOne(year);
+                    KeepDayOccurences(year, DayOfWeek.Sunday, 0);
                 }
                 else
                 {
@@ -211,7 +269,7 @@ namespace Comsec.SqlPrune.Services
                 }
             }
 
-            // Make sur only the most recent backup of 'Keeper' days is kept.
+            // Make sure only the most recent backup of 'Keeper' days is kept.
             KeepOnePerDay(set);
         }
     }
