@@ -35,10 +35,9 @@ The utility relies on the date *in the file name*, **not** the file system's cre
 
 #### Usage:
 
-    sqlprune.exe [path] [-verbose] [-delete] [-no-confirm] [-aws-profile]
+    sqlprune.exe [path] [-delete] [-no-confirm] [-aws-profile]
 
  * __path__ is the path to a local folder or an S3 bucket containting .bak files (e.g. `c:\sql-backups` or `s3://bucket-name/backups`)
- * __-verbose__ writes more information to the standard output
  * __-delete__ is a flag you must add otherwise files will not be deleted
  * __-no-confim__ is flag you can if you don't want to confirm before any file is deleted
  * __-aws-profile__ is optional and defaults to the value to the `AWSProfileName` app setting (see S3 Credentials)

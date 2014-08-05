@@ -28,15 +28,6 @@ namespace Comsec.SqlPrune.Commands
             public string Path { get; set; }
 
             /// <summary>
-            /// Gets or sets a value indicating whether this command should use a verbose output or not.
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if verbose; otherwise, <c>false</c>.
-            /// </value>
-            [Flag("verbose")]
-            public bool Verbose { get; set; }
-
-            /// <summary>
             /// Gets or sets a value indicating whether to delete files or just run a simulation.
             /// </summary>
             /// <value>
@@ -172,11 +163,9 @@ namespace Comsec.SqlPrune.Commands
             {
                 PruneService.FlagPrunableBackupsInSet(databaseBakupSet);
 
-                if (options.Verbose)
-                {
-                    ColorConsole.Write(ConsoleColor.White, " {0}:", databaseBakupSet.Key);
-                    Console.WriteLine();
-                }
+                ColorConsole.Write(ConsoleColor.White, " {0}:", databaseBakupSet.Key);
+                Console.WriteLine();
+                
                 ColorConsole.Write(ConsoleColor.DarkGray, " Created         Status\tBytes\t\tPath");
                 Console.WriteLine();
 
@@ -236,10 +225,7 @@ namespace Comsec.SqlPrune.Commands
                     }
                 }
 
-                if (options.Verbose)
-                {
-                    Console.WriteLine();
-                }
+                Console.WriteLine();
             }
 
             // Size Summary

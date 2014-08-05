@@ -42,10 +42,9 @@ namespace Comsec.SqlPrune
             Console.WriteLine();
             Console.WriteLine("Usage:");
             Console.WriteLine();
-            Console.WriteLine(" sqlprune.exe [path] [-verbose] [-delete] [-no-confirm]");
+            Console.WriteLine(" sqlprune.exe [path] [-delete] [-no-confirm]");
             Console.WriteLine();
             Console.WriteLine("       path: The path to a local folder or an S3 bucket containting .bak files (e.g. \"c:\\sql-backups\" or \"s3://bucket-name/backups\")");
-            Console.WriteLine("   -verbose: Makes the program chattier");
             Console.WriteLine("    -delete: Unless this flag is present files will not be deleted");
             Console.WriteLine(" -no-confim: You will have to confirm before any file is deleted unless this flag is present");
             Console.WriteLine();
