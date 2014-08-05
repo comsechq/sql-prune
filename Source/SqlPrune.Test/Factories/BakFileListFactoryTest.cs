@@ -38,13 +38,15 @@ namespace Comsec.SqlPrune.Factories
 
             var first = result.First();
 
-            Assert.IsTrue(first.StartsWith("db1_backup_2010_11_20_010203_"));
-            Assert.IsTrue(first.EndsWith(".bak"));
+            Assert.IsTrue(first.Key.StartsWith("db1_backup_2010_11_20_010203_"));
+            Assert.IsTrue(first.Key.EndsWith(".bak"));
+            Assert.Less(0, first.Value);
 
             var last = result.Last();
 
-            Assert.IsTrue(last.StartsWith("db3_backup_2013_11_18_010203_"));
-            Assert.IsTrue(last.EndsWith(".bak"));
+            Assert.IsTrue(last.Key.StartsWith("db3_backup_2013_11_18_010203_"));
+            Assert.IsTrue(last.Key.EndsWith(".bak"));
+            Assert.Less(0, last.Value);
         }
     }
 }

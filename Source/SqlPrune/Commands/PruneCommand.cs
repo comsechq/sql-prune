@@ -128,11 +128,13 @@ namespace Comsec.SqlPrune.Commands
 
             var files = new List<BakModel>(paths.Count);
 
-            foreach (var path in paths)
+            foreach (var pathAndSize in paths)
             {
                 BakModel model;
 
-                if (!BakFilenameExtractor.ValidateFilenameAndExtract(path, out model)) continue;
+                if (!BakFilenameExtractor.ValidateFilenameAndExtract(pathAndSize.Key, out model)) continue;
+
+                model.Size = pathAndSize.Value;
 
                 files.Add(model);
             }
@@ -162,6 +164,10 @@ namespace Comsec.SqlPrune.Commands
 
             var backupSets = files.GroupBy(x => x.DatabaseName);
 
+            long totalBytes = 0;
+            long totalKept = 0;
+            long totalPruned = 0;
+
             foreach (var databaseBakupSet in backupSets)
             {
                 PruneService.FlagPrunableBackupsInSet(databaseBakupSet);
@@ -171,12 +177,12 @@ namespace Comsec.SqlPrune.Commands
                     ColorConsole.Write(ConsoleColor.White, " {0}:", databaseBakupSet.Key);
                     Console.WriteLine();
                 }
-                ColorConsole.Write(ConsoleColor.DarkGray, " Created\t\tStatus\t\tPath");
+                ColorConsole.Write(ConsoleColor.DarkGray, " Created         Status\tBytes\t\tPath");
                 Console.WriteLine();
 
                 foreach (var model in databaseBakupSet)
                 {
-                    Console.Write(" {0}\t", model.Created.ToString("yyyyMMddTHHmmss", CultureInfo.InvariantCulture));
+                    Console.Write(" {0} ", model.Created.ToString("yyyyMMddTHHmmss", CultureInfo.InvariantCulture));
 
                     if (!model.Prunable.HasValue)
                     {
@@ -190,7 +196,7 @@ namespace Comsec.SqlPrune.Commands
                     {
                         ColorConsole.Write(ConsoleColor.DarkGreen, model.Status);
                     }
-                    Console.Write("\t\t");
+                    Console.Write("\t{0,15:N0}\t", model.Size);
 
                     Console.Write(model.Path);
                         
@@ -213,12 +219,41 @@ namespace Comsec.SqlPrune.Commands
                         }
                         Console.WriteLine(model.Path);
                     }
+
+                    totalBytes += model.Size;
+
+                    if (model.Prunable.HasValue)
+                    {
+                        if (model.Prunable.Value)
+                        {
+                            totalPruned += model.Size;
+                        }
+                        else
+                        {
+                            totalKept += model.Size;
+                        }
+
+                    }
                 }
 
                 if (options.Verbose)
                 {
                     Console.WriteLine();
                 }
+            }
+
+            // Size Summary
+            if (totalBytes > 0)
+            {
+                Console.WriteLine();
+
+                ColorConsole.Write(ConsoleColor.DarkGreen, "                 Kept");
+                Console.WriteLine(": \t{0,15:N0}", totalKept);
+
+                ColorConsole.Write(ConsoleColor.DarkRed, "               Pruned");
+                Console.WriteLine(": \t{0,15:N0}", totalPruned);
+
+                Console.WriteLine("                Total:\t{0,15:N0}", totalBytes);
             }
 
             return (int) ExitCode.Success;

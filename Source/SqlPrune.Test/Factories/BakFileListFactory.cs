@@ -60,8 +60,10 @@ namespace Comsec.SqlPrune.Factories
         /// </summary>
         /// <param name="from">The date we should start simulating backups from.</param>
         /// <param name="until">The date we should stop simulating backups until.</param>
-        /// <returns></returns>
-        public IList<string> Create(DateTime from, DateTime until)
+        /// <returns>
+        /// A generated list of files and their size.
+        /// </returns>
+        public IDictionary<string, long> Create(DateTime from, DateTime until)
         {
             return Create(from, until - from);
         }
@@ -71,8 +73,10 @@ namespace Comsec.SqlPrune.Factories
         /// </summary>
         /// <param name="from">From.</param>
         /// <param name="duration">The duration.</param>
-        /// <returns></returns>
-        public IList<string> Create(DateTime from, TimeSpan duration)
+        /// <returns>
+        /// A generated list of files and their size.
+        /// </returns>
+        public IDictionary<string, long> Create(DateTime from, TimeSpan duration)
         {
             var days = duration.Days;
 
@@ -80,21 +84,23 @@ namespace Comsec.SqlPrune.Factories
         }
 
         /// <summary>
-        /// Creates a list of file names, one per day for each <see cref="DatabaseNames"/>.
+        /// Creates a list of file names, one per day for each <see cref="DatabaseNames" />.
         /// </summary>
         /// <param name="from">From.</param>
         /// <param name="numberOfDays">The number of days.</param>
-        /// <returns></returns>
-        public IList<string> Create(DateTime from, int numberOfDays)
+        /// <returns>
+        /// A generated list of files and their size.
+        /// </returns>
+        public IDictionary<string, long> Create(DateTime from, int numberOfDays)
         {
-            List<string> result = null;
+            Dictionary<string, long> result = null;
 
             // Helps simulating a BAK file name: dbname1_backup_2014_03_29_010003_3911004.bak
             const string filenameFormat = "{0}_backup_{1}_{2}_{3}.bak";
 
             if (numberOfDays > 0)
             {
-                result = new List<string>(numberOfDays * DatabaseNames.Count);
+                result = new Dictionary<string, long>(numberOfDays * DatabaseNames.Count);
 
                 for (var i = 0; i < numberOfDays; i++)
                 {
@@ -109,7 +115,7 @@ namespace Comsec.SqlPrune.Factories
                         
                         var filename = string.Format(filenameFormat, databaseName, date, time, random);
 
-                        result.Add(filename);
+                        result.Add(filename, Convert.ToInt64(random));
                     }
                 }
             }

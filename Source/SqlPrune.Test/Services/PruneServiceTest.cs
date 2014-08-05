@@ -269,7 +269,7 @@ namespace Comsec.SqlPrune.Services
             var paths = new BakFileListFactory().WithDatabases(new[] {"db1"})
                                                 .Create(now.AddDays(-howManyDays), now);
 
-            return InitaliseBackupSet(paths);
+            return InitaliseBackupSet(paths.Keys);
         }
 
         /// <summary>

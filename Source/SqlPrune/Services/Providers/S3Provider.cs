@@ -7,6 +7,7 @@ using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Amazon.SimpleDB.Model;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Sugar;
 
@@ -172,13 +173,13 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <param name="dirPath">The bucket + directory to search.</param>
         /// <param name="searchPattern">The search patter (e.g. "*.txt").</param>
         /// <returns>
-        /// A list of files.
+        /// A dictionary listing each file found and its size (in bytes).
         /// </returns>
-        /// <exception cref="System.ArgumentException">Invalid search pattern: only '', '*', '*.ext' or 'name*' are supported </exception>
+        /// <exception cref="System.ArgumentException">Invalid search pattern: only '', '*', '*.ext' or 'name*' are supported</exception>
         /// <remarks>
         /// System Files and Folders will be ignored
         /// </remarks>
-        public IList<string> GetFiles(string dirPath, string searchPattern)
+        public IDictionary<string, long> GetFiles(string dirPath, string searchPattern)
         {
             var bucketName = ExtractBucketNameFromPath(dirPath);
             var subPath = dirPath.SubstringAfterChar(bucketName + "/");
@@ -192,7 +193,7 @@ namespace Comsec.SqlPrune.Services.Providers
 
             var allObjectsInBucket = ListAllObjects(client, bucketName, subPath);
 
-            var results = new List<string>(allObjectsInBucket.Count);
+            var results = new Dictionary<string, long>(allObjectsInBucket.Count);
 
             IEnumerable<S3Object> matches;
 
@@ -213,7 +214,12 @@ namespace Comsec.SqlPrune.Services.Providers
                 throw new ArgumentException("Invalid search pattern: only '', '*', '*.ext' or 'name*' are supported ", searchPattern);
             }
 
-            results.AddRange(matches.Select(x => string.Format("s3://{0}/{1}", bucketName, x.Key)));
+            foreach (var s3Object in matches)
+            {
+                var completePath = string.Format("s3://{0}/{1}", bucketName, s3Object.Key);
+
+                results.Add(completePath, s3Object.Size);
+            }
 
             return results;
         }

@@ -52,16 +52,25 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <param name="dirPath">The directory to search.</param>
         /// <param name="searchPattern">The search patter (e.g. "*.txt").</param>
         /// <returns>
-        /// A list of files.
+        /// A dictionary listing each file found and its size (in bytes).
         /// </returns>
         /// <remarks>
         /// System Files and Folders will be ignored
         /// </remarks>
-        public IList<string> GetFiles(string dirPath, string searchPattern)
+        public IDictionary<string, long> GetFiles(string dirPath, string searchPattern)
         {
             var info = new DirectoryInfo(dirPath);
 
-            var result = WalkDirectory(info, "*.bak");
+            var matchingFiles = WalkDirectory(info, "*.bak");
+
+            var result = new Dictionary<string, long>(matchingFiles.Count);
+
+            foreach (var filename in matchingFiles)
+            {
+                var fileInfo = new FileInfo(filename);
+
+                result.Add(filename, fileInfo.Length);
+            }
 
             return result;
         }

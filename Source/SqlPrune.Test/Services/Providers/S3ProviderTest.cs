@@ -61,11 +61,12 @@ namespace Comsec.SqlPrune.Services.Providers
         [Ignore("Integration test: replace bucket-name with a real bucket")]
         public void TestGetFiles()
         {
-            var files = provider.GetFiles("s3://a-test-bucket/releases", "*.zip");
+            var files = provider.GetFiles("s3://a-test-bucket/folder", "*.zip");
 
             Assert.Less(0, files.Count);
 
-            Assert.IsTrue(files.First().StartsWith("s3://"));
+            Assert.IsTrue(files.Keys.First().StartsWith("s3://"));
+            Assert.Less(0, files.Values.First());
         }
 
         [Test]

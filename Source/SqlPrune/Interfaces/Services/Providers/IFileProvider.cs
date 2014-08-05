@@ -27,12 +27,12 @@ namespace Comsec.SqlPrune.Interfaces.Services.Providers
         /// <param name="dirPath">The directory to search.</param>
         /// <param name="searchPattern">The search patter (e.g. "*.txt").</param>
         /// <returns>
-        /// A list of files.
+        /// A dictionary listing each file found and its size (in bytes).
         /// </returns>
         /// <remarks>
         /// System Files and Folders will be ignored
         /// </remarks>
-        IList<string> GetFiles(string dirPath, string searchPattern);
+        IDictionary<string, long> GetFiles(string dirPath, string searchPattern);
 
         /// <summary>
         /// Deletes the specified file.

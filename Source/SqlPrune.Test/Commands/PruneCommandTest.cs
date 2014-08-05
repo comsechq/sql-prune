@@ -147,7 +147,7 @@ namespace Comsec.SqlPrune.Commands
                 .Verify(call => call.Delete(It.IsAny<string>()), Times.Once());
 
             localFileSystemProviderMock
-                .Verify(call => call.Delete(files.First()), Times.Once());
+                .Verify(call => call.Delete(files.Keys.First()), Times.Once());
 
             Assert.AreEqual(0, result);
         }

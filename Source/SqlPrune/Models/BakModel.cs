@@ -32,6 +32,14 @@ namespace Comsec.SqlPrune.Models
         public DateTime Created { get; set; }
 
         /// <summary>
+        /// Gets or sets the size of the file in bytes.
+        /// </summary>
+        /// <value>
+        /// The size.
+        /// </value>
+        public long Size { get; set; }
+
+        /// <summary>
         /// Gets or sets the can be pruned.
         /// If it is prunable it will be deleted, if not, the fruit will be "left in the tree" (that is the bak file will not be deleted).
         /// </summary>

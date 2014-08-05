@@ -45,13 +45,17 @@ The utility relies on the date *in the file name*, **not** the file system's cre
 
 Examples:
 
+Simply list which files would be pruned in a folder without deleting anthing (dry run):
+
+    sqlprune E:\Backups
+
 Confirm before deleting prunable backups in `E:\Backups`, including sub directories:
 
-     sqlprune E:\Backups -delete
+    sqlprune E:\Backups -delete
 
 Confirm before deleting prunable backups for database names starting with `test` in `s3://bucket-name`:
 
-     sqlprune s3://bucket-name/test -delete
+    sqlprune s3://bucket-name/test -delete
 
 #### Download & Install:
 
@@ -80,7 +84,6 @@ You can also modify the `AWSProfilesLocation` setting in `sqlprune.exe.config` t
 
 #### TODO:
 
-- Output size of each file and give a summary of how much data is used and how much is going to be deleted.
 - Cutomisable pruning rules: 
     - Load the rules from an XML configuration file
     - Generate an XSD that describes the XML syntax for pruning rules 
@@ -91,7 +94,7 @@ You can also modify the `AWSProfilesLocation` setting in `sqlprune.exe.config` t
 Veryfying which date should be kept or pruned is a tedious task.
 
 To make it easier, we have modified an [SVG visualiser](http://bl.ocks.org/mbostock/4063318) 
-to render the output of the unit tests into familiar calendar view.
+to render the output of the unit tests into a familiar calendar view.
 
 After you run the unit tests in `PruneServiceTest`, open `Calendar.html` in a modern web browser.
 
