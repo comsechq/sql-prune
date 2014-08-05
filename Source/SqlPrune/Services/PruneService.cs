@@ -70,6 +70,9 @@ namespace Comsec.SqlPrune.Services
         /// <param name="set">The set.</param>
         /// <param name="dayOfWeekToKeep">The day of week to keep (e.g. Sunday).</param>
         /// <param name="weekNumberToKeepFromFirstOccurence">The occurences to keep (e.g. for 1st and 3nd week: "new []{ 0, 2}").</param>
+        /// <remarks>
+        /// If you want to keep the first and third occurence (e.g. new []{0, 2}) but there are less matches, the best 'match' will be 
+        /// </remarks>
         public void KeepDayOccurences(IEnumerable<BakModel> set, DayOfWeek dayOfWeekToKeep, int[] weekNumberToKeepFromFirstOccurence)
         {
             var processableBackupsInSet = new List<BakModel>();
@@ -102,17 +105,40 @@ namespace Comsec.SqlPrune.Services
                 }
             }
 
-            // Oldest first (Created Ascending)
-            var bakModels = processableBackupsInSet.OrderBy(x => x.Created)
-                                                   .ToArray();
-
-            var numberOfOccurrences = bakModels.Count(x => x.Created.DayOfWeek == dayOfWeekToKeep);
-
-            if (numberOfOccurrences > 1)
+            // Prune non matches
+            foreach (var bak in processableBackupsInSet.Where(x => x.Created.DayOfWeek != dayOfWeekToKeep))
             {
+                bak.Prunable = true;
+            }
+            
+            // Oldest first
+            var potentialKeepers = processableBackupsInSet.Where(x => x.Created.DayOfWeek == dayOfWeekToKeep)
+                                                          .OrderBy(x => x.Created)
+                                                          .ToArray();
+
+            if (potentialKeepers.Length == 0)
+            {
+                KeepFirst(processableBackupsInSet);
+            }
+            else if (potentialKeepers.Length == 1)
+            {
+                KeepFirst(potentialKeepers);
+            }
+            else if (potentialKeepers.Length == weekNumberToKeepFromFirstOccurence.Length)
+            {
+                foreach (var bak in potentialKeepers)
+                {
+                    bak.Prunable = false;
+                }
+            }
+            else
+            {
+                // We'll remove values in this list as we find matches (so that we don't matches more than once)
+                var occurencesToMatch = weekNumberToKeepFromFirstOccurence.ToList();
+
                 DateTime? firstMatchCreationDate = null;
 
-                foreach (var bak in bakModels)
+                foreach (var bak in potentialKeepers)
                 {
                     if (bak.Created.DayOfWeek == dayOfWeekToKeep)
                     {
@@ -129,17 +155,31 @@ namespace Comsec.SqlPrune.Services
                             firstMatchCreationDate = bak.Created;
                         }
 
-                        bak.Prunable = !(weekNumberToKeepFromFirstOccurence.Contains(numberOfWeeksSinceLastMatch));
+                        // Got that far an ran out of occurences to match: I haz can prune
+                        if (occurencesToMatch.Count == 0)
+                        {
+                            bak.Prunable = true;
+                        }
+
+                        for (var i = occurencesToMatch.Count - 1; i >= 0; i--)
+                        {
+                            var occurence = occurencesToMatch[i];
+
+                            // Match on an occurence equal or above what is wanted
+                            bak.Prunable = !(numberOfWeeksSinceLastMatch >= occurence);
+
+                            if (!bak.Prunable.Value)
+                            {
+                                occurencesToMatch.RemoveAt(i);
+                                break;
+                            }
+                        }
                     }
                     else
                     {
                         bak.Prunable = true;
                     }
                 }
-            }
-            else
-            {
-                KeepFirst(bakModels);
             }
         }
 

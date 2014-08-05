@@ -81,7 +81,9 @@
   <ItemGroup>
     <Content Include="Calendar.html" />
     <Content Include="dateformat.js" />
+    <Content Include="Samples\test-files.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

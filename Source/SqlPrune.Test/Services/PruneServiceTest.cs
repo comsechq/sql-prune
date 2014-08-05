@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Comsec.SqlPrune.Factories;
 using Comsec.SqlPrune.Models;
 using Newtonsoft.Json;
@@ -208,6 +209,42 @@ namespace Comsec.SqlPrune.Services
         }
 
         [Test]
+        public void TestKeepFirstAndThirdSundayWhenProcessingAMonthWithBackupsOnlyForTheEndOfTheMonth()
+        {
+            var paths = ReadAllFileList();
+
+            var set = InitaliseBackupSet(paths).Where(x => x.Created >= new DateTime(2013, 4, 1))
+                                               .Where(x => x.Created <= new DateTime(2013, 5, 1))
+                                               .ToArray();
+
+            service.KeepDayOccurences(set, DayOfWeek.Sunday, new[] {0, 2});
+
+            Assert.AreEqual(2, set.Count(x => x.Prunable.HasValue && !x.Prunable.Value));
+            Assert.AreEqual(12, set.Count(x => x.Prunable.HasValue && x.Prunable.Value));
+
+            Assert.IsFalse(set[4].Prunable.Value);
+            Assert.IsFalse(set[11].Prunable.Value);
+        }
+
+        [Test]
+        public void TestKeepFirstAndThirdSundayWhenProcessingAMonthWithSundayGapBiggerThanOneWeek()
+        {
+            var paths = ReadAllFileList();
+
+            var set = InitaliseBackupSet(paths).Where(x => x.Created >= new DateTime(2013, 12, 1))
+                                               .Where(x => x.Created <= new DateTime(2014, 1, 1))
+                                               .ToArray();
+
+            service.KeepDayOccurences(set, DayOfWeek.Sunday, new[] { 0, 2 });
+
+            Assert.AreEqual(2, set.Count(x => x.Prunable.HasValue && !x.Prunable.Value));
+            Assert.AreEqual(12, set.Count(x => x.Prunable.HasValue && x.Prunable.Value));
+
+            Assert.IsFalse(set[0].Prunable.Value);
+            Assert.IsFalse(set[4].Prunable.Value);
+        }
+
+        [Test]
         public void TestPruneBackupSetWhenMoreThanOneDatabaseNameInSet()
         {
             var set = new List<BakModel>
@@ -225,14 +262,35 @@ namespace Comsec.SqlPrune.Services
         /// <param name="from">Date to generate backups from.</param>
         /// <param name="howManyDays">The how many days to go in the past from the <see cref="from"/> date (must be a positive value).</param>
         /// <returns></returns>
-        private List<BakModel> GenerateBackupSet(DateTime from, int howManyDays)
+        private static List<BakModel> GenerateBackupSet(DateTime from, int howManyDays)
         {
             var now = from;
 
             var paths = new BakFileListFactory().WithDatabases(new[] {"db1"})
                                                 .Create(now.AddDays(-howManyDays), now);
 
-            var backupSet = new List<BakModel>(paths.Count);
+            return InitaliseBackupSet(paths);
+        }
+
+        /// <summary>
+        /// Reads all content of the test file list and splits it into a string[].
+        /// </summary>
+        /// <returns></returns>
+        private static string[] ReadAllFileList()
+        {
+            var listing = File.ReadAllText(@"..\..\Samples\test-files.txt");
+
+            return Regex.Split(listing, Environment.NewLine);
+        }
+
+        /// <summary>
+        /// Initalises the backup set.
+        /// </summary>
+        /// <param name="paths">The paths.</param>
+        /// <returns></returns>
+        private static List<BakModel> InitaliseBackupSet(IEnumerable<string> paths)
+        {
+            var backupSet = new List<BakModel>();
 
             foreach (var path in paths)
             {
@@ -272,7 +330,7 @@ namespace Comsec.SqlPrune.Services
         }
 
         [Test]
-        public void TestPruneBackupSetWhenFirstRun()
+        public void TestFlagPrunableBackupsInSetWhenFirstRun()
         {
             var backupSet = GenerateBackupSet(new DateTime(2014, 6, 27, 11, 54, 10), 1500);
 
@@ -281,8 +339,8 @@ namespace Comsec.SqlPrune.Services
             RenderPrunedData(backupSet);
 
             Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
-            Assert.AreEqual(47, backupSet.Count(x => !x.Prunable.Value));
-            Assert.AreEqual(1453, backupSet.Count(x => x.Prunable.Value));
+            Assert.AreEqual(48, backupSet.Count(x => !x.Prunable.Value));
+            Assert.AreEqual(1452, backupSet.Count(x => x.Prunable.Value));
 
             // First backup in the year
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2010, 5, 23)).Prunable.Value);
@@ -292,10 +350,9 @@ namespace Comsec.SqlPrune.Services
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2012, 1, 1)).Prunable.Value);
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 1, 6)).Prunable.Value);
 
-            // One year from now
+            // First and thrid Sunday of each month (or at least two backups in the month)
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 6, 23)).Prunable.Value);
-
-            // First and thrid Sunday of each month
+            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 6, 30)).Prunable.Value);
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 7, 7)).Prunable.Value);
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 7, 21)).Prunable.Value);
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 8, 4)).Prunable.Value);
@@ -346,7 +403,7 @@ namespace Comsec.SqlPrune.Services
         }
 
         [Test]
-        public void TestPruneBackupSetWhenPruningAlreadyHappendedBefore()
+        public void TestFlagPrunableBackupsInSetWhenPruningAlreadyHappendedBefore()
         {
             var before = new DateTime(2014, 6, 27, 11, 54, 10);
 
@@ -368,7 +425,7 @@ namespace Comsec.SqlPrune.Services
 
             Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
             Assert.AreEqual(47, backupSet.Count(x => !x.Prunable.Value));
-            Assert.AreEqual(43, backupSet.Count(x => x.Prunable.Value));
+            Assert.AreEqual(44, backupSet.Count(x => x.Prunable.Value));
 
             // First backup in the year
             Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2010, 5, 23)).Prunable.Value);
@@ -473,7 +530,7 @@ namespace Comsec.SqlPrune.Services
         }
 
         [Test]
-        public void TestPruneBackupSetWhenPruningAlreadyHappenedALongTimeBefore()
+        public void TestFlagPrunableBackupsInSetWhenPruningAlreadyHappenedALongTimeBefore()
         {
             var before = new DateTime(2014, 6, 27, 11, 54, 10);
 
@@ -495,42 +552,67 @@ namespace Comsec.SqlPrune.Services
 
             Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
             Assert.AreEqual(46, backupSet.Count(x => !x.Prunable.Value));
-            Assert.AreEqual(192, backupSet.Count(x => x.Prunable.Value));
+            Assert.AreEqual(193, backupSet.Count(x => x.Prunable.Value));
         }
 
         [Test]
-        public void TestPrunBackupSetWhenMoreThanOneBackupInOneDayOnDayToKeep()
+        public void TestFlagPrunableBackupsInSetWhenMoreThanOneBackupInOneDayOnDayToKeep()
         {
             var now = new DateTime(2014, 2, 28, 21, 15, 0);
 
-            var backupSet = GenerateBackupSet(now, 60);
+            var backupSet = GenerateBackupSet(now, 120);
 
             service.FlagPrunableBackupsInSet(backupSet);
 
-            Assert.IsFalse(backupSet[0].Prunable.Value);
-
-            var duplicate = new BakModel {DatabaseName = "db1", Created = new DateTime(2013, 12, 30, 22, 30, 5)};
+            var duplicate = new BakModel {DatabaseName = "db1", Created = new DateTime(2013, 11, 17, 22, 30, 5)};
 
             backupSet.Add(duplicate);
             
             service.FlagPrunableBackupsInSet(backupSet);
 
-            Assert.IsTrue(backupSet[0].Prunable.Value);
-            Assert.IsFalse(duplicate.Prunable.Value);
+            RenderPrunedData(backupSet);
+
+            var keeperDay = backupSet.Where(x => x.Created.Date == new DateTime(2013, 11, 17))
+                                       .ToArray();
+
+            Assert.IsTrue(keeperDay[0].Prunable.Value);
+            Assert.IsFalse(keeperDay[1].Prunable.Value);
         }
 
         [Test]
         public void TestFlagPrunableBackupsInSetWhenMoreThanOneBackupInOneDayOnDayNotToKeep()
         {
-            var now = new DateTime(2014, 2, 28, 11, 54, 10);
+            var mostRecentBackup = new DateTime(2014, 2, 28, 11, 54, 10);
 
-            var backupSet = GenerateBackupSet(now, 60);
+            var backupSet = GenerateBackupSet(mostRecentBackup, 120);
 
-            backupSet.Add(new BakModel { DatabaseName = "db1", Created = new DateTime(2013, 12, 31, 22, 30, 5) });
+            backupSet.Add(new BakModel { DatabaseName = "db1", Created = new DateTime(2013, 12, 8, 22, 30, 5) });
 
             service.FlagPrunableBackupsInSet(backupSet);
 
-            Assert.IsTrue(backupSet.Last().Prunable.Value);
+            RenderPrunedData(backupSet);
+
+            var pruningDay = backupSet.Where(x => x.Created.Date == new DateTime(2013, 12, 8))
+                                      .ToArray();
+
+            Assert.IsTrue(pruningDay[0].Prunable.Value);
+            Assert.IsTrue(pruningDay[1].Prunable.Value);
+        }
+
+        [Test]
+        public void TestFlagPrunableBackupsInSetWithARealFileList()
+        {
+            var paths = ReadAllFileList();
+
+            var backupSet = InitaliseBackupSet(paths);
+
+            service.FlagPrunableBackupsInSet(backupSet);
+
+            RenderPrunedData(backupSet);
+
+            Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
+            Assert.AreEqual(41, backupSet.Count(x => !x.Prunable.Value));
+            Assert.AreEqual(340, backupSet.Count(x => x.Prunable.Value));
         }
     }
 }

@@ -104,7 +104,7 @@
                     .attr("y", function(d) { return day(d) * cellSize; });
 
                 rect.append("title")
-                    .text(function(d) { return d.format('dddd d mmm yyyy') + ': no items found.'; });
+                    .text(function(d) { return d.format('dddd d mmm yyyy') + ': no files'; });
 
                 var monthGroup = svg.selectAll(".month")
                     .data(function(d) { return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })

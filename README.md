@@ -43,6 +43,16 @@ The utility relies on the date *in the file name*, **not** the file system's cre
  * __-no-confim__ is flag you can if you don't want to confirm before any file is deleted
  * __-aws-profile__ is optional and defaults to the value to the `AWSProfileName` app setting (see S3 Credentials)
 
+Examples:
+
+Confirm before deleting prunable backups in `E:\Backups`, including sub directories:
+
+     sqlprune E:\Backups -delete
+
+Confirm before deleting prunable backups for database names starting with `test` in `s3://bucket-name`:
+
+     sqlprune s3://bucket-name/test -delete
+
 #### Download & Install:
 
 1. Find the [latest release](https://github.com/comsechq/sql-prune/releases).
