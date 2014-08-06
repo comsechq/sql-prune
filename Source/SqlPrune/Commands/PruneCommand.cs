@@ -231,15 +231,13 @@ namespace Comsec.SqlPrune.Commands
             // Size Summary
             if (totalBytes > 0)
             {
-                Console.WriteLine();
+                ColorConsole.Write(ConsoleColor.DarkGreen, "              Kept");
+                Console.WriteLine(": {0,19:N0}", totalKept);
 
-                ColorConsole.Write(ConsoleColor.DarkGreen, "                 Kept");
-                Console.WriteLine(": \t{0,15:N0}", totalKept);
+                ColorConsole.Write(ConsoleColor.DarkRed, "            Pruned");
+                Console.WriteLine(": {0,19:N0}", totalPruned);
 
-                ColorConsole.Write(ConsoleColor.DarkRed, "               Pruned");
-                Console.WriteLine(": \t{0,15:N0}", totalPruned);
-
-                Console.WriteLine("                Total:\t{0,15:N0}", totalBytes);
+                Console.WriteLine("             Total: {0,19:N0}", totalBytes);
             }
 
             return (int) ExitCode.Success;
