@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Amazon.RDS.Model;
 using Comsec.SqlPrune.Interfaces.Services;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Comsec.SqlPrune.Models;
@@ -188,26 +189,30 @@ namespace Comsec.SqlPrune.Commands
                     Console.Write("\t{0,15:N0}\t", model.Size);
 
                     Console.Write(model.Path);
-                        
-                    Console.WriteLine();
-
+                    
                     if (model.Prunable.HasValue && model.Prunable.Value && options.Delete)
                     {
-                        var prompt = string.Format("Delete {0}?", model.Path);
+                        var prompt = string.Format("{0}Delete {1}?", Environment.NewLine, model.Path);
 
                         var delete = options.NoConfirm || Confirm.Prompt(prompt, "y");
 
                         if (delete)
                         {
                             provider.Delete(model.Path);
-                            ColorConsole.Write(ConsoleColor.Red, "Deleted ");
+                            ColorConsole.Write(ConsoleColor.Red, " Deleted");
                         }
                         else
                         {
-                            ColorConsole.Write(ConsoleColor.DarkGreen, "Skipped ");
+                            ColorConsole.Write(ConsoleColor.DarkGreen, " Skipped");
                         }
-                        Console.WriteLine(model.Path);
+
+                        if (!options.NoConfirm)
+                        {
+                            Console.WriteLine(" {0}", model.Path);
+                        }
                     }
+
+                    Console.WriteLine();
 
                     totalBytes += model.Size;
 
@@ -232,12 +237,12 @@ namespace Comsec.SqlPrune.Commands
             if (totalBytes > 0)
             {
                 ColorConsole.Write(ConsoleColor.DarkGreen, "              Kept");
-                Console.WriteLine(": {0,19:N0}", totalKept);
+                Console.WriteLine(": {0,19:N0} ({1})", totalKept, totalKept.ToSizeSuffix());
 
                 ColorConsole.Write(ConsoleColor.DarkRed, "            Pruned");
-                Console.WriteLine(": {0,19:N0}", totalPruned);
+                Console.WriteLine(": {0,19:N0} ({1})", totalPruned, totalPruned.ToSizeSuffix());
 
-                Console.WriteLine("             Total: {0,19:N0}", totalBytes);
+                Console.WriteLine("             Total: {0,19:N0} ({1})", totalBytes, totalBytes.ToSizeSuffix());
             }
 
             return (int) ExitCode.Success;
