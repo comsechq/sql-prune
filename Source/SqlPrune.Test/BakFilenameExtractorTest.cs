@@ -49,6 +49,23 @@ namespace Comsec.SqlPrune
         }
 
         [Test]
+        public void TestValidateFilenameAndExtractWhenDatabaseNameContainsUnderscrores()
+        {
+            string dbName;
+            DateTime created;
+
+            Assert.True(BakFilenameExtractor.ValidateFilenameAndExtract("db_name_backup_2014_03_29_010006_1882358.bak", out dbName, out created));
+
+            Assert.AreEqual("db_name", dbName);
+            Assert.AreEqual(new DateTime(2014, 3, 29, 01, 0, 6), created);
+
+            Assert.True(BakFilenameExtractor.ValidateFilenameAndExtract("db_name_with_loads_of_underscores_backup_2014_04_29_010006_1882358.bak", out dbName, out created));
+
+            Assert.AreEqual("db_name_with_loads_of_underscores", dbName);
+            Assert.AreEqual(new DateTime(2014, 4, 29, 01, 0, 6), created);
+        }
+
+        [Test]
         public void TestValidateFilenameAndExtractDateIsValid()
         {
             string dbName;

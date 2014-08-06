@@ -32,19 +32,22 @@ namespace Comsec.SqlPrune
             {
                 var fileName = filename.SubstringAfterLastChar(@"\");
 
-                var numberOfUnderscores = fileName.Count(x => x == '_');
-
                 var backupPosition = fileName.IndexOf("_backup_", StringComparison.InvariantCultureIgnoreCase);
 
-                if (numberOfUnderscores == 6 && backupPosition >= 0)
+                if (backupPosition >= 0)
                 {
-                    databaseName = fileName.Substring(0, backupPosition);
+                    var numberOfUnderscoresAfterBackup = fileName.SubstringAfterChar("_backup_").Count(x => x == '_');
 
-                    var datetimeComponent = fileName.Substring(backupPosition + 8, 17);
+                    if (numberOfUnderscoresAfterBackup == 4)
+                    {
+                        databaseName = fileName.Substring(0, backupPosition);
 
-                    created = DateTime.ParseExact(datetimeComponent, "yyyy_MM_dd_HHmmss", null, DateTimeStyles.AssumeUniversal);
+                        var datetimeComponent = fileName.Substring(backupPosition + 8, 17);
 
-                    isValid = true;
+                        created = DateTime.ParseExact(datetimeComponent, "yyyy_MM_dd_HHmmss", null, DateTimeStyles.AssumeUniversal);
+
+                        isValid = true;
+                    }
                 }
             }
 
