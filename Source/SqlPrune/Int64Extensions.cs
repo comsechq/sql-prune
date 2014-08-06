@@ -17,8 +17,13 @@ namespace Comsec.SqlPrune
         /// <remarks>
         /// JLRishe's implementation from http://stackoverflow.com/questions/14488796/does-net-provide-an-easy-way-convert-bytes-to-kb-mb-gb-etc
         /// </remarks>
-        public static string ToSizeSuffix(this Int64 value)
+        public static string ToSizeWithSuffix(this Int64 value)
         {
+            if (value == 0)
+            {
+                return "0";
+            }
+
             var mag = (int) Math.Log(value, 1024);
 
             var adjustedSize = (decimal) value/(1L << (mag*10));

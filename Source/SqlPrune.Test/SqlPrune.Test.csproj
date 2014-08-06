@@ -57,6 +57,7 @@
     <Compile Include="AutoMockingTest.cs" />
     <Compile Include="BakFilenameExtractorTest.cs" />
     <Compile Include="DateTimeExtensions.cs" />
+    <Compile Include="Int64ExetensionsTest.cs" />
     <Compile Include="Models\CalendarModel.cs" />
     <Compile Include="Commands\PruneCommandTest.cs" />
     <Compile Include="Factories\BakFileListFactory.cs" />

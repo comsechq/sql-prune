@@ -237,12 +237,12 @@ namespace Comsec.SqlPrune.Commands
             if (totalBytes > 0)
             {
                 ColorConsole.Write(ConsoleColor.DarkGreen, "              Kept");
-                Console.WriteLine(": {0,19:N0} ({1})", totalKept, totalKept.ToSizeSuffix());
+                Console.WriteLine(": {0,19:N0} ({1})", totalKept, totalKept.ToSizeWithSuffix());
 
                 ColorConsole.Write(ConsoleColor.DarkRed, "            Pruned");
-                Console.WriteLine(": {0,19:N0} ({1})", totalPruned, totalPruned.ToSizeSuffix());
+                Console.WriteLine(": {0,19:N0} ({1})", totalPruned, totalPruned.ToSizeWithSuffix());
 
-                Console.WriteLine("             Total: {0,19:N0} ({1})", totalBytes, totalBytes.ToSizeSuffix());
+                Console.WriteLine("             Total: {0,19:N0} ({1})", totalBytes, totalBytes.ToSizeWithSuffix());
             }
 
             return (int) ExitCode.Success;
