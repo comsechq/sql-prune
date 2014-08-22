@@ -18,7 +18,7 @@ namespace Comsec.SqlPrune.Commands
 
         private Mock<IFileProvider> localFileSystemProviderMock;
         private Mock<IFileProvider> s3ProviderMock;
-
+        
         [SetUp]
         public void Setup()
         {

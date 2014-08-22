@@ -47,6 +47,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BakFilenameExtractor.cs" />
+    <Compile Include="Commands\BaseFileProviderCommand.cs" />
+    <Compile Include="Commands\RecoverCommand.cs" />
     <Compile Include="Confirm.cs" />
     <Compile Include="Commands\PruneCommand.cs" />
     <Compile Include="ColorConsole.cs" />

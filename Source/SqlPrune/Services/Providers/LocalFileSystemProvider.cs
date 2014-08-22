@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
+using Sugar;
 
 namespace Comsec.SqlPrune.Services.Providers
 {
@@ -135,6 +136,20 @@ namespace Comsec.SqlPrune.Services.Providers
         public void Delete(string path)
         {
             File.Delete(path);
+        }
+
+        /// <summary>
+        /// Copies to local.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="destinationFolder">The destination folder.</param>
+        public void CopyToLocal(string path, string destinationFolder)
+        {
+            var filename = path.SubstringAfterLastChar(@"\");
+
+            var destination = Path.Combine(destinationFolder, filename);
+
+            File.Copy(path, destination);
         }
     }
 }

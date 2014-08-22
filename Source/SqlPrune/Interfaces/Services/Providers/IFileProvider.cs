@@ -39,5 +39,12 @@ namespace Comsec.SqlPrune.Interfaces.Services.Providers
         /// </summary>
         /// <param name="path">The path.</param>
         void Delete(string path);
+
+        /// <summary>
+        /// Copies the file at the given <see cref="path"/> and to a specified specified local <see cref="destinationFolder"/>.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="destinationFolder">The destination folder.</param>
+        void CopyToLocal(string path, string destinationFolder);
     }
 }

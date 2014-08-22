@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="AutoMockingTest.cs" />
     <Compile Include="BakFilenameExtractorTest.cs" />
+    <Compile Include="Commands\RecoverCommandTest.cs" />
     <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="Int64ExetensionsTest.cs" />
     <Compile Include="Models\CalendarModel.cs" />

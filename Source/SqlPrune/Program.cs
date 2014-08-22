@@ -7,7 +7,9 @@ namespace Comsec.SqlPrune
         static void Main(string[] args)
         {
             var console = new PruneConsole();
+            
             console.Commands.Add(new PruneCommand());
+            console.Commands.Add(new RecoverCommand());
 
             console.Run(args);
         }

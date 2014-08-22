@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Amazon.RDS.Model;
 using Comsec.SqlPrune.Interfaces.Services;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Services;
-using Comsec.SqlPrune.Services.Providers;
 using Sugar.Command;
 
 namespace Comsec.SqlPrune.Commands
@@ -15,8 +13,9 @@ namespace Comsec.SqlPrune.Commands
     /// <summary>
     /// Prunes a given location from its .bak files.
     /// </summary>
-    public class PruneCommand : BoundCommand<PruneCommand.Options>
+    public class PruneCommand : BaseFileProviderCommand<PruneCommand.Options>
     {
+        [Flag("prune")]
         public class Options
         {
             /// <summary>
@@ -50,14 +49,6 @@ namespace Comsec.SqlPrune.Commands
         #region Dependencies
 
         /// <summary>
-        /// Gets or sets the file service.
-        /// </summary>
-        /// <value>
-        /// The file service.
-        /// </value>
-        public IFileProvider[] FileProviders { get; set; }
-
-        /// <summary>
         /// Gets or sets the prune service.
         /// </summary>
         /// <value>
@@ -72,12 +63,6 @@ namespace Comsec.SqlPrune.Commands
         /// </summary>
         public PruneCommand()
         {
-            FileProviders = new IFileProvider[]
-                            {
-                                new S3Provider(),
-                                new LocalFileSystemProvider()
-                            };
-
             PruneService = new PruneService();
         }
 
@@ -89,24 +74,18 @@ namespace Comsec.SqlPrune.Commands
         {
             PruneConsole.OutputVersion();
 
-            var provider = FileProviders.FirstOrDefault(p => p.ShouldRun(options.Path));
+            IFileProvider provider;
 
-            if (provider == null)
+            if (!GetProvider(options.Path, out provider))
             {
-                Console.WriteLine("Unrecognised path. You must provide a path to a local folder or to an Amazon S3 bucket.");
-                Console.WriteLine(@"Example: x:\path\to\folder or s3://bucket-name/optionally/with/path/folder");
-
-                return (int) ExitCode.GeneralError;
+                return (int)ExitCode.GeneralError;
             }
 
-            if (string.IsNullOrEmpty(options.Path) || options.Path.StartsWith("-") || !provider.IsDirectory(options.Path))
-            {
-                Console.WriteLine("Invalid path: You must provide a path to an existing local folder or drive.");
-
-                return (int) ExitCode.GeneralError;
-            }
-
-            Console.WriteLine("Listing all .bak files in folder {0} including subfolders...", options.Path);
+            Console.Write("Lising all ");
+            ColorConsole.Write(ConsoleColor.Cyan, "*.bak");
+            Console.Write(" files in ");
+            ColorConsole.Write(ConsoleColor.Yellow, options.Path);
+            Console.WriteLine(" including subfolders...");
             Console.WriteLine();
 
             var paths = provider.GetFiles(options.Path, "*.bak");
@@ -118,18 +97,7 @@ namespace Comsec.SqlPrune.Commands
                 return (int) ExitCode.GeneralError;
             }
 
-            var files = new List<BakModel>(paths.Count);
-
-            foreach (var pathAndSize in paths)
-            {
-                BakModel model;
-
-                if (!BakFilenameExtractor.ValidateFilenameAndExtract(pathAndSize.Key, out model)) continue;
-
-                model.Size = pathAndSize.Value;
-
-                files.Add(model);
-            }
+            var files = ToBakModels(paths);
 
             Console.WriteLine("Found {0} file(s) out of which {1} have valid file names.", paths.Count, files.Count);
             Console.WriteLine();

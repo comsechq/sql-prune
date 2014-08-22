@@ -35,12 +35,15 @@ The utility relies on the date *in the file name*, **not** the file system's cre
 
 #### Usage:
 
-    sqlprune.exe [path] [-delete] [-no-confirm] [-aws-profile]
+##### Pruning Mode:
+
+    sqlprune.exe [path] -prune [-delete] [-no-confirm] [-aws-profile]
 
  * __path__ is the path to a local folder or an S3 bucket containting .bak files (e.g. `c:\sql-backups` or `s3://bucket-name/backups`)
+ * __-prune__: The flag to activate the 'prune' mode
  * __-delete__ is a flag you must add otherwise files will not be deleted
- * __-no-confim__ is flag you can if you don't want to confirm before any file is deleted
- * __-aws-profile__ is optional and defaults to the value to the `AWSProfileName` app setting (see S3 Credentials)
+ * __-no-confim__ is flag you can use if you don't want to confirm before any file is deleted
+ * __-aws-profile__ is optional and defaults to the value of the `AWSProfileName` app setting (see S3 Credentials)
 
 Examples:
 
@@ -55,6 +58,28 @@ Confirm before deleting prunable backups in `E:\Backups`, including sub director
 Confirm before deleting prunable backups for database names starting with `test` in `s3://bucket-name`:
 
     sqlprune s3://bucket-name/test -delete
+
+##### Recovery Mode:
+
+    sqlprune.exe [path] -recover -db-name -dest [-date]
+
+ * path: The path to a local folder or an S3 bucket containting .bak files (e.g. \"c:\\sql-backups\" or \"s3://bucket-name/backups\")");
+ * __-recover__: The flag to activate the 'recovery' mode
+ * __-db-name__: The name of the database to recover
+ * __-dest__: The path to a local folder where to copy the file to
+ * __-date__: OptionallySpecifies which date to retrieve (when not provided the most recent backup in the set will be used)
+ * __-no-confim__ is flag you can use if you don't want to confirm before any file is recovered
+ * __-aws-profile__ is optional and defaults to the value of the `AWSProfileName` app setting (see S3 Credentials)
+
+Examples:
+
+Copy the most recent backup available for the database 'helloworld' from an S3 bucket:
+
+    sqlprune S3://bucket-name/test -recover -db-name helloworld -dest E:\Backups
+
+Copy the backup made on the 30th of October 2013 for the database S3 from a local folder:
+
+    sqlprune E:\Backups -recover -db-name helloworld -date 20131030 -dest C:\destination
 
 #### Download & Install:
 
@@ -84,6 +109,7 @@ You can also modify the `AWSProfilesLocation` setting in `sqlprune.exe.config` t
 #### TODO:
 
 - Cutomisable pruning rules: 
+    - Handle recovering to an S3 bucket as well as a local path
     - Load the rules from an XML configuration file
     - Generate an XSD that describes the XML syntax for pruning rules 
     - The pruning rules in the configuration file are applied one after the other

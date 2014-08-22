@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Net;
 using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
-using Amazon.SimpleDB.Model;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Sugar;
 
@@ -242,6 +242,33 @@ namespace Comsec.SqlPrune.Services.Providers
                           };
 
             client.DeleteObject(request);
+        }
+
+        /// <summary>
+        /// Downloads an S3 object at the specified <see cref="path"/> and writes it to the specified local <see cref="destinationFolder"/>.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="destinationFolder">The destination folder.</param>
+        public void CopyToLocal(string path, string destinationFolder)
+        {
+            var bucketName = ExtractBucketNameFromPath(path);
+            var subPath = path.SubstringAfterChar(bucketName + "/");
+
+            var filename = path.SubstringAfterLastChar("/");
+
+            var client = InitialiseClient();
+
+            var request = new GetObjectRequest()
+                          {
+                              BucketName = bucketName,
+                              Key = subPath
+                          };
+
+            var response = client.GetObject(request);
+
+            var destination = Path.Combine(destinationFolder, filename);
+
+            response.WriteResponseStreamToFile(destination);
         }
     }
 }
