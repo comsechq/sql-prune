@@ -62,7 +62,7 @@ namespace Comsec.SqlPrune.Services.Providers
         {
             var info = new DirectoryInfo(dirPath);
 
-            var matchingFiles = WalkDirectory(info, "*.bak");
+            var matchingFiles = WalkDirectory(info, searchPattern);
 
             var result = new Dictionary<string, long>(matchingFiles.Count);
 
