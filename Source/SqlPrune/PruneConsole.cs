@@ -42,7 +42,7 @@ namespace Comsec.SqlPrune
             Console.WriteLine();
             Console.WriteLine("Usage:");
             Console.WriteLine();
-            Console.WriteLine(" sqlprune.exe [path] [-delete] [-no-confirm]]");
+            Console.WriteLine(" sqlprune.exe [path] -prune [-delete] [-no-confirm]");
             Console.WriteLine();
             Console.WriteLine("       path: The path to a local folder or an S3 bucket containting .bak files (e.g. \"c:\\sql-backups\" or \"s3://bucket-name/backups\")");
             Console.WriteLine("     -prune: The flag to activate the 'prune' mode");
