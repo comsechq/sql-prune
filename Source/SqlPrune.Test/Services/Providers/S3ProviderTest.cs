@@ -58,6 +58,15 @@ namespace Comsec.SqlPrune.Services.Providers
         }
 
         [Test]
+        [Ignore("Integration test: replace path with a real value")]
+        public void TestGetFileSize()
+        {
+            var result = provider.GetFileSize("s3://a-test-bucket/folder/file.ext");
+
+            Assert.AreEqual(2849199616, result);
+        }
+
+        [Test]
         [Ignore("Integration test: replace bucket-name with a real bucket")]
         public void TestGetFiles()
         {

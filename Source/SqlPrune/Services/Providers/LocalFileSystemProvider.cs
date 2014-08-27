@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Sugar;
 
@@ -45,6 +46,25 @@ namespace Comsec.SqlPrune.Services.Providers
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Gets the size of the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public long GetFileSize(string path)
+        {
+            try
+            {
+                var info = new FileInfo(path);
+
+                return info.Length;
+            }
+            catch (FileNotFoundException)
+            {
+                return -1;
+            }
         }
 
         /// <summary>
@@ -142,14 +162,25 @@ namespace Comsec.SqlPrune.Services.Providers
         /// Copies to local.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="destinationFolder">The destination folder.</param>
-        public void CopyToLocal(string path, string destinationFolder)
+        /// <param name="destinationPath">The destination path.</param>
+        public void CopyToLocal(string path, string destinationPath)
         {
             var filename = path.SubstringAfterLastChar(@"\");
 
-            var destination = Path.Combine(destinationFolder, filename);
+            var destination = Path.Combine(destinationPath, filename);
 
             File.Copy(path, destination);
+        }
+
+        /// <summary>
+        /// Copies to local asynchronously.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="destinationPath">The destination path.</param>
+        /// <returns></returns>
+        public async Task CopyToLocalAsync(string path, string destinationPath)
+        {
+            await Task.Factory.StartNew(() => CopyToLocal(path, destinationPath));
         }
     }
 }

@@ -31,5 +31,13 @@ namespace Comsec.SqlPrune.Services.Providers
             Assert.IsTrue(provider.ShouldRun(@"ftp://boo"));
             Assert.IsTrue(provider.ShouldRun(@"http://boo"));
         }
+
+        [Test]
+        public void TestGetFileSizeWhenFileDoesNotExist()
+        {
+            var result = provider.GetFileSize(@"C:\this\folder\should\not\exists\and\this\file.either");
+
+            Assert.AreEqual(-1, result);
+        }
     }
 }

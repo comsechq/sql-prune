@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Services.Providers;
+using Sugar;
 using Sugar.Command;
 
 namespace Comsec.SqlPrune.Commands
@@ -158,11 +161,28 @@ namespace Comsec.SqlPrune.Commands
                 return (int)ExitCode.GeneralError;
             }
 
+            var filename = mostRecentFile.Path.SubstringAfterLastChar("/");
+            var destination = Path.Combine(options.DestinationPath, filename);
+
+            // Check the file doesn't exist in destination folder
+            var destinationFileSize = LocalFileSystemProvider.GetFileSize(destination);
+            if (destinationFileSize > -1)
+            {
+                if (mostRecentFile.Size == destinationFileSize)
+                {
+                    Console.WriteLine("{0} already exists.", destination);
+                    
+                    return Success();
+                }
+                
+                Console.WriteLine("{0} already exist but is not the same size and will be overwritten.", destination);
+            }
+
             var copy = true;
 
             if (options.NoConfirm)
             {
-                Console.Write("Copying {0} to {1}...", mostRecentFile.Path, options.DestinationPath);
+                Console.WriteLine("Copying {0} to {1}", mostRecentFile.Path, options.DestinationPath);
             }
             else
             {
@@ -173,7 +193,23 @@ namespace Comsec.SqlPrune.Commands
 
             if (copy)
             {
-                provider.CopyToLocal(mostRecentFile.Path, options.DestinationPath);
+                var task = provider.CopyToLocalAsync(mostRecentFile.Path, destination)
+                                   .GetAwaiter();
+
+                var i = 0;
+
+                do
+                {
+                    Console.Write(".");
+                    Thread.Sleep(1000);
+                    i++;
+                    if (i%10 == 0)
+                    {
+                        Console.WriteLine();
+                    }
+                } while (!task.IsCompleted);
+
+                Console.WriteLine("OK");
             }
             
             return Success();

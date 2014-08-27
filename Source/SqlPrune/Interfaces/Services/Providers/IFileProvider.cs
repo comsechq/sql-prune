@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Comsec.SqlPrune.Interfaces.Services.Providers
 {
@@ -22,6 +23,13 @@ namespace Comsec.SqlPrune.Interfaces.Services.Providers
         bool IsDirectory(string path);
 
         /// <summary>
+        /// Gets the size of the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>-1 if the file doesn't exist otherwhise the number of bytes</returns>
+        long GetFileSize(string path);
+
+        /// <summary>
         /// Returns the names of files (including their paths) that match the specified search pattern in the specified directory.
         /// </summary>
         /// <param name="dirPath">The directory to search.</param>
@@ -41,10 +49,11 @@ namespace Comsec.SqlPrune.Interfaces.Services.Providers
         void Delete(string path);
 
         /// <summary>
-        /// Copies the file at the given <see cref="path"/> and to a specified specified local <see cref="destinationFolder"/>.
+        /// Copies the file at the given <see cref="path"/> and to a specified specified local <see cref="destinationPath"/> asynchronously.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="destinationFolder">The destination folder.</param>
-        void CopyToLocal(string path, string destinationFolder);
+        /// <param name="destinationPath">The destination path.</param>
+        /// <returns></returns>
+        Task CopyToLocalAsync(string path, string destinationPath);
     }
 }

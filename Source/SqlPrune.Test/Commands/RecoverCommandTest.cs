@@ -70,7 +70,7 @@ namespace Comsec.SqlPrune.Commands
             s3ProviderMock
                 .Verify(
                     call =>
-                        call.CopyToLocal("s3://bucket/DbName_backup_2014_11_30_010002_5357881.bak", @"c:\folder"), Times.Once());
+                        call.CopyToLocalAsync("s3://bucket/DbName_backup_2014_11_30_010002_5357881.bak", @"c:\folder"), Times.Once());
             
             Assert.AreEqual((int) ExitCode.Success, result);
         }
@@ -119,7 +119,7 @@ namespace Comsec.SqlPrune.Commands
             s3ProviderMock
                 .Verify(
                     call =>
-                        call.CopyToLocal("s3://bucket/DbName_backup_2013_10_27_010003_3477881.bak", @"c:\folder"), Times.Once());
+                        call.CopyToLocalAsync("s3://bucket/DbName_backup_2013_10_27_010003_3477881.bak", @"c:\folder"), Times.Once());
 
             Assert.AreEqual((int)ExitCode.Success, result);
         }

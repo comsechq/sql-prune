@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
@@ -93,7 +94,10 @@ namespace Comsec.SqlPrune.Services.Providers
         {
             var client = InitialiseClient();
 
-            var request = new GetBucketLocationRequest() {BucketName = ExtractBucketNameFromPath(path)};
+            var request = new GetBucketLocationRequest
+                          {
+                              BucketName = ExtractBucketNameFromPath(path)
+                          };
 
             try
             {
@@ -110,6 +114,43 @@ namespace Comsec.SqlPrune.Services.Providers
                 }
 
                 throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Gets the size of the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>-1 if the object doesn't exist</returns>
+        public long GetFileSize(string path)
+        {
+            var bucketName = ExtractBucketNameFromPath(path);
+            var subPath = path.SubstringAfterChar(bucketName + "/");
+
+            var client = InitialiseClient();
+
+            var request = new GetObjectMetadataRequest
+            {
+                BucketName = bucketName,
+                Key = subPath
+            };
+
+            try
+            {
+                var response = client.GetObjectMetadata(request);
+
+                return response == null
+                    ? -1
+                    : response.ContentLength;
+            }
+            catch(AmazonS3Exception ex)
+            {
+                if (ex.ErrorCode == "NotFound")
+                {
+                    return -1;
+                }
+
+                throw;
             }
         }
 
@@ -245,16 +286,15 @@ namespace Comsec.SqlPrune.Services.Providers
         }
 
         /// <summary>
-        /// Downloads an S3 object at the specified <see cref="path"/> and writes it to the specified local <see cref="destinationFolder"/>.
+        /// Copies to local asynchronous.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="destinationFolder">The destination folder.</param>
-        public void CopyToLocal(string path, string destinationFolder)
+        /// <param name="destinationPath">The destination path.</param>
+        /// <returns></returns>
+        public async Task CopyToLocalAsync(string path, string destinationPath)
         {
             var bucketName = ExtractBucketNameFromPath(path);
             var subPath = path.SubstringAfterChar(bucketName + "/");
-
-            var filename = path.SubstringAfterLastChar("/");
 
             var client = InitialiseClient();
 
@@ -264,11 +304,9 @@ namespace Comsec.SqlPrune.Services.Providers
                               Key = subPath
                           };
 
-            var response = client.GetObject(request);
+            var response = await client.GetObjectAsync(request);
 
-            var destination = Path.Combine(destinationFolder, filename);
-
-            response.WriteResponseStreamToFile(destination);
+            await response.WriteResponseStreamToFileAsync(destinationPath, false, new CancellationToken());
         }
     }
 }
