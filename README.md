@@ -61,7 +61,7 @@ Confirm before deleting prunable backups for database names starting with `test`
 
 ##### Recovery Mode:
 
-    sqlprune.exe [path] -recover -db-name -dest [-date]
+    sqlprune.exe [path] -recover -db-name -dest [-date] [-no-confirm]
 
  * path: The path to a local folder or an S3 bucket containting .bak files (e.g. \"c:\\sql-backups\" or \"s3://bucket-name/backups\")");
  * __-recover__: The flag to activate the 'recovery' mode

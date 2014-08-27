@@ -84,6 +84,8 @@ namespace Comsec.SqlPrune.Commands
 
         public override int Execute(Options options)
         {
+            PruneConsole.OutputVersion();
+
             IFileProvider provider;
 
             if (!GetProvider(options.Path, out provider))

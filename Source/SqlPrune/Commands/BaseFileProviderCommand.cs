@@ -48,8 +48,6 @@ namespace Comsec.SqlPrune.Commands
         {
             var success = true;
 
-            PruneConsole.OutputVersion();
-
             provider = FileProviders.FirstOrDefault(p => p.ShouldRun(path));
 
             if (provider == null)
