@@ -50,6 +50,10 @@ namespace Comsec.SqlPrune.Commands
                 .Setup(call => call.IsDirectory("s3://bucket"))
                 .Returns(true);
 
+            s3ProviderMock
+                .Setup(call => call.ExtractFilenameFromPath("s3://bucket/DbName_backup_2014_11_30_010002_5357881.bak"))
+                .Returns("DbName_backup_2014_11_30_010002_5357881.bak");
+
             var files = new Dictionary<string, long>
                         {
                             {"s3://bucket/DbName_backup_2013_10_27_010003_3477881.zip", 1093753342},
@@ -58,7 +62,7 @@ namespace Comsec.SqlPrune.Commands
                         };
 
             s3ProviderMock
-                .Setup(call => call.GetFiles("s3://bucket", "DbName*"))
+                .Setup(call => call.GetFiles("s3://bucket", "DbName_backup_*"))
                 .Returns(files);
 
             localFileSystemProviderMock
@@ -70,7 +74,7 @@ namespace Comsec.SqlPrune.Commands
             s3ProviderMock
                 .Verify(
                     call =>
-                        call.CopyToLocalAsync("s3://bucket/DbName_backup_2014_11_30_010002_5357881.bak", @"c:\folder"), Times.Once());
+                        call.CopyToLocalAsync("s3://bucket/DbName_backup_2014_11_30_010002_5357881.bak", @"c:\folder\DbName_backup_2014_11_30_010002_5357881.bak"), Times.Once());
             
             Assert.AreEqual((int) ExitCode.Success, result);
         }
@@ -99,6 +103,10 @@ namespace Comsec.SqlPrune.Commands
                 .Setup(call => call.IsDirectory("s3://bucket"))
                 .Returns(true);
 
+            s3ProviderMock
+                .Setup(call => call.ExtractFilenameFromPath("s3://bucket/DbName_backup_2013_10_27_010003_3477881.bak"))
+                .Returns("DbName_backup_2013_10_27_010003_3477881.bak");
+
             var files = new Dictionary<string, long>
                         {
                             {"s3://bucket/DbName_backup_2013_10_27_010003_3477881.zip", 1093753342},
@@ -107,7 +115,7 @@ namespace Comsec.SqlPrune.Commands
                         };
 
             s3ProviderMock
-                .Setup(call => call.GetFiles("s3://bucket", "DbName*"))
+                .Setup(call => call.GetFiles("s3://bucket", "DbName_backup_*"))
                 .Returns(files);
 
             localFileSystemProviderMock
@@ -119,7 +127,7 @@ namespace Comsec.SqlPrune.Commands
             s3ProviderMock
                 .Verify(
                     call =>
-                        call.CopyToLocalAsync("s3://bucket/DbName_backup_2013_10_27_010003_3477881.bak", @"c:\folder"), Times.Once());
+                        call.CopyToLocalAsync("s3://bucket/DbName_backup_2013_10_27_010003_3477881.bak", @"c:\folder\DbName_backup_2013_10_27_010003_3477881.bak"), Times.Once());
 
             Assert.AreEqual((int)ExitCode.Success, result);
         }

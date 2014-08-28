@@ -65,7 +65,7 @@ Confirm before deleting prunable backups for database names starting with `test`
 
  * path: The path to a local folder or an S3 bucket containting .bak files (e.g. \"c:\\sql-backups\" or \"s3://bucket-name/backups\")");
  * __-recover__: The flag to activate the 'recovery' mode
- * __-db-name__: The name of the database to recover
+ * __-db-name__: The exact name of the database to recover (case sensitive)
  * __-dest__: The path to a local folder where to copy the file to
  * __-date__: OptionallySpecifies which date to retrieve (when not provided the most recent backup in the set will be used)
  * __-no-confim__ is flag you can use if you don't want to confirm before any file is recovered
@@ -77,9 +77,9 @@ Copy the most recent backup available for the database 'helloworld' from an S3 b
 
     sqlprune S3://bucket-name/test -recover -db-name helloworld -dest E:\Backups
 
-Copy the backup made on the 30th of October 2013 for the database S3 from a local folder:
+Copy `helloWorld_backup_2014_06_20_010002_0957417.bak` from `E:\Backups` to the `C:\destination`:
 
-    sqlprune E:\Backups -recover -db-name helloworld -date 20131030 -dest C:\destination
+    sqlprune E:\Backups -recover -db-name helloWorld -date 2014-06-20T01:00:02 -dest C:\destination
 
 #### Download & Install:
 

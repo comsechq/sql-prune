@@ -109,7 +109,7 @@ namespace Comsec.SqlPrune.Commands
             Console.WriteLine(" including subfolders...");
             Console.WriteLine();
 
-            var paths = provider.GetFiles(options.Path, options.DatabaseName + "*")
+            var paths = provider.GetFiles(options.Path, options.DatabaseName + "_backup_*")
                                 .Where(x => x.Key.EndsWith(".bak"));
 
             foreach (var keyValuePair in paths)
@@ -199,12 +199,15 @@ namespace Comsec.SqlPrune.Commands
 
                 do
                 {
-                    Console.Write(".");
-                    Thread.Sleep(1000);
                     i++;
+                    Console.Write(".");
                     if (i%10 == 0)
                     {
                         Console.WriteLine();
+                    }
+                    if (i > 1)
+                    {
+                        Thread.Sleep(1000);
                     }
                 } while (!task.IsCompleted);
 
