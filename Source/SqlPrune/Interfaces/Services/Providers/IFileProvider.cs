@@ -16,6 +16,13 @@ namespace Comsec.SqlPrune.Interfaces.Services.Providers
         bool ShouldRun(string path);
 
         /// <summary>
+        /// Extracts the filename from path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        string ExtractFilenameFromPath(string path);
+
+        /// <summary>
         /// Determines whether the specified path is a directory.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -51,8 +58,8 @@ namespace Comsec.SqlPrune.Interfaces.Services.Providers
         /// <summary>
         /// Copies the file at the given <see cref="path"/> and to a specified specified local <see cref="destinationPath"/> asynchronously.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="destinationPath">The destination path.</param>
+        /// <param name="path">The path (e.g. s3://bucket/folder/file.bak).</param>
+        /// <param name="destinationPath">The destination path (e.g. c:\folder\file.bak).</param>
         /// <returns></returns>
         Task CopyToLocalAsync(string path, string destinationPath);
     }

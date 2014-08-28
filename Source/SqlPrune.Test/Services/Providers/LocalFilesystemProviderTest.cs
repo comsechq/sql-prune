@@ -33,6 +33,14 @@ namespace Comsec.SqlPrune.Services.Providers
         }
 
         [Test]
+        public void TestExtractFilenameFromPath()
+        {
+            var result = provider.ExtractFilenameFromPath(@"E:\folder\sub\file.ext");
+
+            Assert.AreEqual("file.ext", result);
+        }
+
+        [Test]
         public void TestGetFileSizeWhenFileDoesNotExist()
         {
             var result = provider.GetFileSize(@"C:\this\folder\should\not\exists\and\this\file.either");

@@ -24,6 +24,16 @@ namespace Comsec.SqlPrune.Services.Providers
         }
 
         /// <summary>
+        /// Extracts the filename from path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public string ExtractFilenameFromPath(string path)
+        {
+            return path.SubstringAfterLastChar(@"\");
+        }
+
+        /// <summary>
         /// Determines whether the specified path is a directory.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -162,13 +172,9 @@ namespace Comsec.SqlPrune.Services.Providers
         /// Copies to local.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="destinationPath">The destination path.</param>
-        public void CopyToLocal(string path, string destinationPath)
+        /// <param name="destination">The destination path.</param>
+        public void CopyToLocal(string path, string destination)
         {
-            var filename = path.SubstringAfterLastChar(@"\");
-
-            var destination = Path.Combine(destinationPath, filename);
-
             File.Copy(path, destination);
         }
 

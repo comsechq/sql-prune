@@ -6,7 +6,6 @@ using System.Threading;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Services.Providers;
-using Sugar;
 using Sugar.Command;
 
 namespace Comsec.SqlPrune.Commands
@@ -161,7 +160,7 @@ namespace Comsec.SqlPrune.Commands
                 return (int)ExitCode.GeneralError;
             }
 
-            var filename = mostRecentFile.Path.SubstringAfterLastChar("/");
+            var filename = provider.ExtractFilenameFromPath(mostRecentFile.Path);
             var destination = Path.Combine(options.DestinationPath, filename);
 
             // Check the file doesn't exist in destination folder

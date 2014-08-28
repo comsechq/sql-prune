@@ -40,6 +40,14 @@ namespace Comsec.SqlPrune.Services.Providers
         }
 
         [Test]
+        public void TestExtractFilenameFromPath()
+        {
+            var result = provider.ExtractFilenameFromPath("s3://bucket/folder/sub/file.ext");
+
+            Assert.AreEqual("file.ext", result);
+        }
+
+        [Test]
         [Ignore("Integration test: replace bucket-name with a real bucket")]
         public void TestIsDirectory()
         {
