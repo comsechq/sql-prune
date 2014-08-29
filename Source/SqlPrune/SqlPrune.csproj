@@ -33,42 +33,30 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AWSSDK, Version=2.2.1.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
+    <Reference Include="AWSSDK, Version=2.2.4.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\AWSSDK.2.2.1.0\lib\net45\AWSSDK.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.2.2.4.0\lib\net45\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="Sugar">
-      <HintPath>..\packages\Sugar.2014.06.11.1615\lib\net45\Sugar.dll</HintPath>
+      <HintPath>..\packages\Sugar.2014.08.27.0930\lib\net45\Sugar.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BakFilenameExtractor.cs" />
-    <Compile Include="Commands\BaseFileProviderCommand.cs" />
-    <Compile Include="Commands\RecoverCommand.cs" />
-    <Compile Include="Confirm.cs" />
-    <Compile Include="Commands\PruneCommand.cs" />
-    <Compile Include="ColorConsole.cs" />
-    <Compile Include="DateTimeExtensions.cs" />
-    <Compile Include="Int64Extensions.cs" />
-    <Compile Include="Interfaces\Services\IPruneService.cs" />
-    <Compile Include="Interfaces\Services\Providers\IFileProvider.cs" />
-    <Compile Include="Models\BakModel.cs" />
-    <Compile Include="PruneConsole.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\Providers\LocalFileSystemProvider.cs" />
-    <Compile Include="Services\PruneService.cs" />
-    <Compile Include="Services\Providers\S3Provider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\SqlPrune.Core\SqlPrune.Core.csproj">
+      <Project>{d25c7d61-c511-45c5-b080-7c430b2ad9f0}</Project>
+      <Name>SqlPrune.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

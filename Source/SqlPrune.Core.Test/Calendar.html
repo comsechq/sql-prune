@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <title>Calendar View</title>
+        <meta charset="utf-8">
+        <style>
+            body {
+                font: 10px sans-serif;
+                shape-rendering: crispEdges;
+            }
+
+            .day {
+                fill: #fff;
+                stroke: #ccc;
+            }
+
+            .month {
+                fill: none;
+                stroke: #000;
+                stroke-width: 0;
+            }
+        </style>
+    </head>
+    <body>
+
+        <script language="javascript" type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
+        <script language="javascript" type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+        <script language="javascript" type="text/javascript" src="./dateformat.js"></script>
+        <script language="javascript" type="text/javascript">
+
+            var model = undefined;
+
+            $.getJSON('./prune-test-data.json', function(data) {
+
+                model = data;
+
+
+                function monthPath(t0) {
+                    var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
+                        d0 = +day(t0),
+                        w0 = +week(t0),
+                        d1 = +day(t1),
+                        w1 = +week(t1);
+                    return "M" + (w0 + 1) * cellSize + "," + d0 * cellSize
+                        + "H" + w0 * cellSize + "V" + 7 * cellSize
+                        + "H" + w1 * cellSize + "V" + (d1 + 1) * cellSize
+                        + "H" + (w1 + 1) * cellSize + "V" + 0
+                        + "H" + (w0 + 1) * cellSize + "Z";
+                }
+
+                function monthX(t0) {
+                    var w0 = +week(t0);
+                    return (w0 + 1) * cellSize;
+                }
+
+                function rangeToColor(range) {
+                    /// <param name="range">A number representing the wether the backup should be pruned or kept</param>
+                    switch (range) {
+                    case 0:
+                        return '#d6e9c6';
+                    default:
+                        return '#ebccd1';
+                    }
+                }
+
+                var container = $('body');
+
+                var cellSize = container.width() / 58;
+
+                var day = d3.time.format("%w"),
+                    week = d3.time.format("%U");
+
+                var colorValue = d3.scale.quantize()
+                    .domain([model.minValue, model.maxValue])
+                    .range(d3.range(8).map(function(d) {
+                        return rangeToColor(d);
+                    }));
+
+                var width = container.width();
+
+                var svg = d3.select(container[0]).selectAll('svg')
+                    .data(d3.range(model.startYear, model.endYear + 1))
+                    .enter().append('svg')
+                    .attr("width", width)
+                    .attr("height", (cellSize * 7) + 20)
+                    .attr("class", "calendar")
+                    .append("g")
+                    .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + ",20)");
+
+                svg.append("text")
+                    .attr("transform", "translate(-6," + cellSize * 3.5 + ")rotate(-90)")
+                    .style("text-anchor", "middle")
+                    .text(function(d) { return d; });
+
+                var rect = svg.selectAll(".day")
+                    .data(function(d) { return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+                    .enter().append("rect")
+                    .attr("class", "day")
+                    .style('fill', '#efefef')
+                    .style('stroke', '#fff')
+                    .attr("width", cellSize)
+                    .attr("height", cellSize)
+                    .attr("x", function(d) { return week(d) * cellSize; })
+                    .attr("y", function(d) { return day(d) * cellSize; });
+
+                rect.append("title")
+                    .text(function(d) { return d.format('dddd d mmm yyyy') + ': no files'; });
+
+                var monthGroup = svg.selectAll(".month")
+                    .data(function(d) { return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+                    .enter()
+                    .append("g")
+                    .attr("class", "month");
+
+                monthGroup.append("text")
+                    .attr('x', function(d) { return monthX(d); })
+                    .attr('y', -4)
+                    .style("text-anchor", "left")
+                    .style('fill', '#404040')
+                    .attr("class", "month-text")
+                    .text(function(d) {
+                        return d.format('mmm');
+                    });
+
+                monthGroup.append("path")
+                    .attr("d", monthPath)
+                    .style('fill', 'none')
+                    .style('stroke', '#fff')
+                    .style('stroke-width', '4px');
+
+                var data = d3.nest()
+                    .key(function(d) {
+                        // Instanciating a Date from a string value is implementation dependant!
+                        // Here we call new Date(year, mont, day) to avoid weird date behaviours!
+                        var parts = d.date.match(/(\d+)/g);
+                        var year = parts[0];
+                        var zeroBasedMonth = parts[1] - 1;
+                        var dayValue = parts[2];
+                        return new Date(year, zeroBasedMonth, dayValue);
+                    })
+                    .rollup(function(d) { return d[0].count; })
+                    .map(model.values);
+
+                rect.filter(function(d) { return d in data; })
+                    .style("fill", function(d) { return colorValue(data[d]); })
+                    .select("title")
+                    .text(function(d) {
+                        var caption = data[d] == 0 ? 'Keeper' : 'Prunable';
+                        return new Date(d).format('dddd d mmm yyyy') + ": " + caption;
+                    });
+
+            });
+
+        </script>
+    </body>
+    <p style="float: right;">
+        Modified <a href="http://bl.ocks.org/mbostock/4063318" target="_bank">d3js calendar view</a> example.
+    </p>
+    <legend>
+        <h3>PruneService unit test result output</h3>
+        <h4>Legend:</h4>
+        <ul>
+            <li>
+                <strong style="background: #d6e9c6;">Green</strong>: Keeper (database backup to keep)
+            </li>
+            <li>
+                <strong style="background: #ebccd1;">Red</strong>: Prunable (database backup to discard)
+            </li>
+        </ul>
+    </legend>
+    
+</html>

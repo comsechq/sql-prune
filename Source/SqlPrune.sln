@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{E4AC4A91-8FAD-45F7-8B6A-A8C13D35D004}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,7 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlPrune", "SqlPrune\SqlPrune.csproj", "{792992CC-C703-454A-B5E6-9AB7BB9752CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlPrune.Test", "SqlPrune.Test\SqlPrune.Test.csproj", "{C583F3A8-8A71-4664-B1B4-12411D86197E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlPrune.Core", "SqlPrune.Core\SqlPrune.Core.csproj", "{D25C7D61-C511-45C5-B080-7C430B2AD9F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlPrune.Core.Test", "SqlPrune.Core.Test\SqlPrune.Core.Test.csproj", "{C583F3A8-8A71-4664-B1B4-12411D86197E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +26,10 @@ Global
 		{792992CC-C703-454A-B5E6-9AB7BB9752CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{792992CC-C703-454A-B5E6-9AB7BB9752CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{792992CC-C703-454A-B5E6-9AB7BB9752CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D25C7D61-C511-45C5-B080-7C430B2AD9F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D25C7D61-C511-45C5-B080-7C430B2AD9F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D25C7D61-C511-45C5-B080-7C430B2AD9F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D25C7D61-C511-45C5-B080-7C430B2AD9F0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C583F3A8-8A71-4664-B1B4-12411D86197E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C583F3A8-8A71-4664-B1B4-12411D86197E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C583F3A8-8A71-4664-B1B4-12411D86197E}.Release|Any CPU.ActiveCfg = Release|Any CPU
