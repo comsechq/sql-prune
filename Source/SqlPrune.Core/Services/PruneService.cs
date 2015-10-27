@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
 using System.Linq;
-using Amazon.Redshift.Model;
 using Comsec.SqlPrune.Interfaces.Services;
 using Comsec.SqlPrune.Models;
 
