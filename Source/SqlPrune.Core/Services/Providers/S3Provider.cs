@@ -9,6 +9,7 @@ using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Amazon.S3.Transfer;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Sugar;
 
@@ -267,7 +268,7 @@ namespace Comsec.SqlPrune.Services.Providers
 
             foreach (var s3Object in matches)
             {
-                var completePath = string.Format("s3://{0}/{1}", bucketName, s3Object.Key);
+                var completePath = $"s3://{bucketName}/{s3Object.Key}";
 
                 results.Add(completePath, s3Object.Size);
             }
@@ -296,7 +297,7 @@ namespace Comsec.SqlPrune.Services.Providers
         }
 
         /// <summary>
-        /// Copies to local asynchronous.
+        /// Downloads the S3 object and saves it the specified  destination asynchronously.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="destinationPath">The destination path.</param>
@@ -308,15 +309,16 @@ namespace Comsec.SqlPrune.Services.Providers
 
             var client = InitialiseClient();
 
-            var request = new GetObjectRequest()
+            var utlity = new TransferUtility(client);
+
+            var request = new TransferUtilityDownloadRequest
                           {
                               BucketName = bucketName,
-                              Key = subPath
+                              Key = subPath,
+                              FilePath = destinationPath
                           };
 
-            var response = await client.GetObjectAsync(request);
-
-            await response.WriteResponseStreamToFileAsync(destinationPath, false, new CancellationToken());
+            await utlity.DownloadAsync(request);
         }
     }
 }
