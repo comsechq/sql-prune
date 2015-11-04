@@ -12,6 +12,7 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Sugar;
+using Sugar.Command;
 
 namespace Comsec.SqlPrune.Services.Providers
 {
@@ -37,7 +38,7 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <returns></returns>
         public RegionEndpoint GetRegion()
         {
-            var region = Sugar.Command.Parameters.Current.AsString("region");
+            var region = Parameters.Current.AsString("region");
 
             if (string.IsNullOrEmpty(region))
             {
@@ -48,32 +49,37 @@ namespace Comsec.SqlPrune.Services.Providers
         }
 
         /// <summary>
-        /// Initalises an instance of the Amazon S3 client.
+        /// Initilizes the S3 service.
         /// </summary>
-        /// <returns></returns>
-        protected AmazonS3Client InitialiseClient()
+        private AmazonS3Client InitialiseClient()
         {
-            var profileName = Sugar.Command.Parameters.Current.AsString("aws-profile");
+            // CMD line parameter override?
+            var profileName = Parameters.Current.AsString("AWSProfileName");
             if (string.IsNullOrEmpty(profileName))
             {
-                profileName = ConfigurationManager.AppSettings["AWSProfilesLocation"];
+                // App setting
+                profileName = ConfigurationManager.AppSettings["AWSProfileName"];
                 if (string.IsNullOrEmpty(profileName))
                 {
                     profileName = "default";
                 }
             }
 
-            var profileLocation = ConfigurationManager.AppSettings["AWSProfilesLocation"];
+            // CMD line parameter override?
+            var profileLocation = Parameters.Current.AsString("AWSProfilesLocation");
             if (string.IsNullOrEmpty(profileLocation))
             {
-                profileLocation = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\.aws\config";
+                // App setting
+                profileLocation = ConfigurationManager.AppSettings["AWSProfilesLocation"];
+                if (string.IsNullOrEmpty(profileLocation))
+                {
+                    profileLocation = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\.aws\config";
+                }
             }
 
             var credentials = new StoredProfileAWSCredentials(profileName, profileLocation);
 
-            var client = new AmazonS3Client(credentials, GetRegion());
-
-            return client;
+            return new AmazonS3Client(credentials, RegionEndpoint.EUWest1);
         }
 
         /// <summary>

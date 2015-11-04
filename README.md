@@ -43,7 +43,8 @@ The utility relies on the date *in the file name*, **not** the file system's cre
  * __-prune__: The flag to activate the 'prune' mode
  * __-delete__ is a flag you must add otherwise files will not be deleted
  * __-no-confim__ is flag you can use if you don't want to confirm before any file is deleted
- * __-aws-profile__ is optional and defaults to the value of the `AWSProfileName` app setting (see S3 Credentials)
+ * __-AWSProfileName__ is optional and can be used to override the value of the `AWSProfileName` app setting (see S3 Credentials)
+ * __-AWSProfilesLocation__ is optional and can be used to override the value of the `AWSProfilesLocation` app setting (see S3 Credentials)
 
 Examples:
 
@@ -102,9 +103,11 @@ Example:
 
 You can have more than one profile in your configuration file.
 
-To override the default profile name, either modify the `AWSProfileName` setting  in `sqlprune.exe.config` or alternatively add an `-aws-profile` parameter when you execute `sqlprune.exe` from the command line.
+To override the default profile name, either modify the `AWSProfileName` setting  in `sqlprune.exe.config` or alternatively add an `-AWSProfileName` parameter when you execute `sqlprune.exe` from the command line.
 
-You can also modify the `AWSProfilesLocation` setting in `sqlprune.exe.config` to load a different file (e.g. "c:\aws\config").
+You can also modify the `AWSProfilesLocation` setting in `sqlprune.exe.config` to load a different file (e.g. "c:\users\you\.aws\credentials").
+
+When not set, AWSProfileName defaults to `default` and AWSProfilesLocation defaults to `c:\users\[current_user]\.aws\config`.
 
 #### TODO:
 
