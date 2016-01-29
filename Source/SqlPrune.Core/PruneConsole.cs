@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Sugar.Command;
 
@@ -8,8 +9,71 @@ namespace Comsec.SqlPrune
     /// <summary>
     /// Main Command Console
     /// </summary>
-    public class PruneConsole : BaseCommandConsole
+    public class PruneConsole : BaseConsole
     {
+        /// <summary>
+        /// Entry point for the program logic
+        /// </summary>
+        protected override int Main()
+        {
+            var exitCode = Arguments.Count > 0 ? Run(Arguments) : Default();
+
+            return exitCode;
+        }
+
+        /// <summary>
+        /// Runs the specified parameters.
+        /// </summary>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public int Run(Parameters parameters)
+        {
+            var exitCode = (int)ExitCode.GeneralError;
+
+            var commandType = new BoundCommandFactory().GetCommandType(parameters,
+                () => GetType().Assembly.GetTypes()
+                                        .Where(type => type.Namespace != null && type.Namespace.StartsWith("Comsec.SqlPrune.Commands"))
+                                        .Where(type => type.Name == "Options"));
+
+            if (commandType != null)
+            {
+                exitCode = Run(commandType, parameters);
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write("{0:yyyy-MM-dd HH:mm:ss} : ", DateTime.UtcNow);
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("Unknown command arguments: ");
+
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.Write(Arguments);
+
+                Console.ResetColor();
+            }
+
+            return exitCode;
+        }
+
+        /// <summary>
+        /// Runs the specified parameters.
+        /// </summary>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public int Run(Type commandType, Parameters parameters)
+        {
+            // Assign current parameters
+            Parameters.SetCurrent(parameters.ToString());
+
+            var command = (ICommand)Activator.CreateInstance(commandType);
+
+            command.BindParameters(parameters);
+
+            return command.Execute();
+        }
+
         public static void OutputVersion()
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -29,7 +93,7 @@ namespace Comsec.SqlPrune
         /// <summary>
         /// Displays the help message
         /// </summary>
-        public override int Default()
+        public int Default()
         {
             OutputVersion();
 

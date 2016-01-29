@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
-using Sugar;
+using Sugar.Extensions;
 
 namespace Comsec.SqlPrune.Services.Providers
 {

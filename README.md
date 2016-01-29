@@ -131,3 +131,9 @@ _If your web browser doesn't have access to you local file system (e.g. Chrome) 
 Example:
 
 ![alt tag](https://raw.githubusercontent.com/comsechq/sql-prune/master/unit-test-output-example.png)
+
+####License
+
+This project is licensed under the terms of the [MIT license](https://github.com/comsechq/sql-prune/blob/master/LICENSE.txt). 
+
+By submitting a pull request for this project, you agree to license your contribution under the MIT license to this project.

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Amazon;
 using Amazon.Runtime;
@@ -11,8 +10,8 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
-using Sugar;
 using Sugar.Command;
+using Sugar.Extensions;
 
 namespace Comsec.SqlPrune.Services.Providers
 {

@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using Comsec.SqlPrune.Models;
-using Sugar;
+using Sugar.Extensions;
 
 namespace Comsec.SqlPrune
 {

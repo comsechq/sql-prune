@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("SqlPrune.Core.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Comsec Solutions Ltd")]
+[assembly: AssemblyCompany("Comsec Investigations Ltd")]
 [assembly: AssemblyProduct("SqlPrune..Core.Test")]
-[assembly: AssemblyCopyright("Copyright © Comsec Solutions Ltd 2014")]
+[assembly: AssemblyCopyright("Copyright © Comsec Investigations Ltd 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

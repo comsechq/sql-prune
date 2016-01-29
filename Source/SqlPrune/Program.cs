@@ -1,16 +1,14 @@
-﻿using Comsec.SqlPrune.Commands;
-
-namespace Comsec.SqlPrune
+﻿namespace Comsec.SqlPrune
 {
+    /// <summary>
+    /// Entry point for the command line tool.
+    /// </summary>
     public class Program
     {
         static void Main(string[] args)
         {
             var console = new PruneConsole();
             
-            console.Commands.Add(new PruneCommand());
-            console.Commands.Add(new RecoverCommand());
-
             console.Run(args);
         }
     }
