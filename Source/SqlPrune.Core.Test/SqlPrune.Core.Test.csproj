@@ -90,6 +90,10 @@
       <Project>{d25c7d61-c511-45c5-b080-7c430b2ad9f0}</Project>
       <Name>SqlPrune.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SqlPrune\SqlPrune.csproj">
+      <Project>{792992cc-c703-454a-b5e6-9ab7bb9752ca}</Project>
+      <Name>SqlPrune</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
