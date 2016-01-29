@@ -9,17 +9,11 @@ Fork, then clone the repo:
 
     git clone git@github.com:comsechq/sugar.git
 
-Make sure the tests pass:
-
-    build 
+Make sure the unit tests pass!
 
 Setup:
 
-We use nant to build the project and run our nunit tests.
-	
-Make your change. Add tests for your change. Make the tests pass:
-
-    nant
+Make your change. Add tests for your change. Make the tests pass!
 
 Push to your fork and [submit a pull request](https://github.com/comsechq/sql-prune/compare/).
 
