@@ -5,11 +5,11 @@
     /// </summary>
     public class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             var console = new PruneConsole();
             
-            console.Run(args);
+            return console.Run(args);
         }
     }
 }
