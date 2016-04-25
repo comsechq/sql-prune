@@ -46,10 +46,19 @@ namespace Comsec.SqlPrune.Commands
             public string DestinationPath { get; set; }
 
             /// <summary>
-            /// Gets or sets the date (e.g. 20140228 in the command line).
+            /// Gets or sets the date and time (e.g. "2014-02-28 00:01:02") to restrict to.
             /// </summary>
             /// <value>
-            /// The date.
+            /// The date and time of the backup.
+            /// </value>
+            [Parameter("date-time", Default = "")]
+            public DateTime? DateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the date component only to restrict to (e.g. "2014-02-28").
+            /// </summary>
+            /// <value>
+            /// The day to restore the backup from.
             /// </value>
             [Parameter("date", Default = "")]
             public DateTime? Date { get; set; }
@@ -145,9 +154,13 @@ namespace Comsec.SqlPrune.Commands
                 return (int)ExitCode.GeneralError;
             }
 
-            if (options.Date.HasValue)
+            if (options.DateTime.HasValue)
             {
-                files = files.Where(x => x.Created == options.Date.Value);
+                files = files.Where(x => x.Created == options.DateTime.Value);
+            }
+            else if (options.Date.HasValue)
+            {
+                files = files.Where(x => x.Created.Date == options.Date.Value.Date);
             }
 
             var mostRecentFile = files.OrderByDescending(x => x.Created)

@@ -68,9 +68,12 @@ Confirm before deleting prunable backups for database names starting with `test`
  * __-recover__: The flag to activate the 'recovery' mode
  * __-db-name__: The exact name of the database to recover (case sensitive)
  * __-dest__: The path to a local folder where to copy the file to
- * __-date__: OptionallySpecifies which date to retrieve (when not provided the most recent backup in the set will be used)
+ * __-date-time__: OptionallySpecifies which date and time to retrieve
+ * __-date__: OptionallySpecifies which date to retrieve
  * __-no-confim__ is flag you can use if you don't want to confirm before any file is recovered
  * __-aws-profile__ is optional and defaults to the value of the `AWSProfileName` app setting (see S3 Credentials)
+
+When multiple .bak files are found the most recent is used.
 
 Examples:
 
