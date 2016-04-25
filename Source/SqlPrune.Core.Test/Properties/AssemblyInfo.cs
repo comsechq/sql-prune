@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Comsec Investigations Ltd")]
-[assembly: AssemblyProduct("SqlPrune..Core.Test")]
+[assembly: AssemblyProduct("SqlPrune.Core.Test")]
 [assembly: AssemblyCopyright("Copyright © Comsec Investigations Ltd 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
