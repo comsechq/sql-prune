@@ -5,6 +5,7 @@ using Comsec.SqlPrune.Interfaces.Services;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Comsec.SqlPrune.Services;
 using Sugar.Command;
+using Sugar.Extensions;
 
 namespace Comsec.SqlPrune.Commands
 {
@@ -33,6 +34,15 @@ namespace Comsec.SqlPrune.Commands
             /// </value>
             [Flag("delete")]
             public bool Delete { get; set; }
+
+            /// <summary>
+            /// Gets or sets the file extensions (values can be comma separated).
+            /// </summary>
+            /// <value>
+            /// The file extensions.
+            /// </value>
+            [Parameter("fileExtensions", Default = "*.bak")]
+            public string FileExtensions { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating whether the user will have to [confirm] before any file is deleted.
@@ -78,15 +88,19 @@ namespace Comsec.SqlPrune.Commands
             {
                 return (int)ExitCode.GeneralError;
             }
-
+            
             Console.Write("Lising all ");
-            ColorConsole.Write(ConsoleColor.Cyan, "*.bak");
+            ColorConsole.Write(ConsoleColor.Cyan, options.FileExtensions);
             Console.Write(" files in ");
             ColorConsole.Write(ConsoleColor.Yellow, options.Path);
             Console.WriteLine(" including subfolders...");
             Console.WriteLine();
 
-            var paths = provider.GetFiles(options.Path, "*.bak");
+            var endingWith = options.FileExtensions
+                                    .FromCsv()
+                                    .ToArray();
+
+            var paths = provider.GetFiles(options.Path, endingWith);
 
             if (paths == null)
             {
@@ -158,7 +172,7 @@ namespace Comsec.SqlPrune.Commands
                     
                     if (model.Prunable.HasValue && model.Prunable.Value && options.Delete)
                     {
-                        var prompt = string.Format("{0}Delete {1}?", Environment.NewLine, model.Path);
+                        var prompt = $"{Environment.NewLine}Delete {model.Path}?";
 
                         var delete = options.NoConfirm || Confirm.Prompt(prompt, "y");
 

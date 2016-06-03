@@ -7,6 +7,7 @@ using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Services.Providers;
 using Sugar.Command;
+using Sugar.Extensions;
 
 namespace Comsec.SqlPrune.Commands
 {
@@ -64,6 +65,15 @@ namespace Comsec.SqlPrune.Commands
             public DateTime? Date { get; set; }
 
             /// <summary>
+            /// Gets or sets the file extensions (values can be comma separated).
+            /// </summary>
+            /// <value>
+            /// The file extensions.
+            /// </value>
+            [Parameter("fileExtensions", Default = "*.bak")]
+            public string FileExtensions { get; set; }
+
+            /// <summary>
             /// Gets or sets a value indicating whether the user will have to [confirm] before any file is deleted.
             /// </summary>
             /// <value>
@@ -93,6 +103,11 @@ namespace Comsec.SqlPrune.Commands
             LocalFileSystemProvider = new LocalFileSystemProvider();
         }
 
+        /// <summary>
+        /// Executes the specified options.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns></returns>
         public override int Execute(Options options)
         {
             PruneConsole.OutputVersion();
@@ -110,16 +125,21 @@ namespace Comsec.SqlPrune.Commands
 
                 return (int)ExitCode.GeneralError;
             }
-
+            
             Console.Write("Lising all ");
-            ColorConsole.Write(ConsoleColor.Cyan, "{0}*.bak", options.DatabaseName);
+            ColorConsole.Write(ConsoleColor.Cyan, "{0} backups with extensions: {1}", options.DatabaseName, options.FileExtensions);
             Console.Write(" files in ");
             ColorConsole.Write(ConsoleColor.Yellow, options.Path);
             Console.WriteLine(" including subfolders...");
             Console.WriteLine();
 
+            var extensionsSearchPatterns = options.FileExtensions
+                                                  .FromCsv()
+                                                  .Select(x => x.Replace("*", ""))
+                                                  .ToArray();
+
             var paths = provider.GetFiles(options.Path, options.DatabaseName + "_backup_*")
-                                .Where(x => x.Key.EndsWith(".bak"));
+                                .Where(x => extensionsSearchPatterns.Any(y => x.Key.EndsWith(y)));
 
             foreach (var keyValuePair in paths)
             {

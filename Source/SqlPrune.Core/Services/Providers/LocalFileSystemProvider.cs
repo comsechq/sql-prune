@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Comsec.SqlPrune.Extensions;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Sugar.Extensions;
 
@@ -88,7 +89,7 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <remarks>
         /// System Files and Folders will be ignored
         /// </remarks>
-        public IDictionary<string, long> GetFiles(string dirPath, string searchPattern)
+        public IDictionary<string, long> GetFiles(string dirPath, params string[] searchPattern)
         {
             var info = new DirectoryInfo(dirPath);
 
@@ -110,12 +111,12 @@ namespace Comsec.SqlPrune.Services.Providers
         /// Recursive method to walks the directory including any subdirectories and return all files found matching the given <see cref="searchPattern"/>.
         /// </summary>
         /// <param name="root">The root.</param>
-        /// <param name="searchPattern">The search pattern.</param>
+        /// <param name="searchPatterns">The search patterns (e.g. "*.bak").</param>
         /// <returns></returns>
         /// <remarks>
         /// Inspired from code example on http://msdn.microsoft.com/en-us/library/bb513869.aspx
         /// </remarks>
-        private static IList<string> WalkDirectory(DirectoryInfo root, string searchPattern)
+        private static IList<string> WalkDirectory(DirectoryInfo root, params string[] searchPatterns)
         {
             var result = new List<string>();
 
@@ -123,7 +124,8 @@ namespace Comsec.SqlPrune.Services.Providers
             {
                 try
                 {
-                    var files = root.GetFiles(searchPattern);
+                    var files = root.EnumerateFiles()
+                                    .MatchOnAny(x => x.Name, searchPatterns);
 
                     result.AddRange(files.Select(x => x.Directory + (x.DirectoryName.EndsWith(@"\") ? null : @"\") + x.Name));
                 }
@@ -142,7 +144,7 @@ namespace Comsec.SqlPrune.Services.Providers
                 var subDirs = root.GetDirectories();
                 foreach (var dirInfo in subDirs)
                 {
-                    var filesInSubDirectory = WalkDirectory(dirInfo, searchPattern);
+                    var filesInSubDirectory = WalkDirectory(dirInfo, searchPatterns);
 
                     result.AddRange(filesInSubDirectory);
                 }
@@ -158,7 +160,7 @@ namespace Comsec.SqlPrune.Services.Providers
             
             return result;
         }
-
+        
         /// <summary>
         /// Deletes the specified file.
         /// </summary>

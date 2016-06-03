@@ -47,7 +47,7 @@ namespace Comsec.SqlPrune.Interfaces.Services.Providers
         /// <remarks>
         /// System Files and Folders will be ignored
         /// </remarks>
-        IDictionary<string, long> GetFiles(string dirPath, string searchPattern);
+        IDictionary<string, long> GetFiles(string dirPath, params string[] searchPattern);
 
         /// <summary>
         /// Deletes the specified file.

@@ -35,6 +35,7 @@ namespace Comsec.SqlPrune.Commands
                               Path = "s3://bucket",
                               DatabaseName = "DbName",
                               DestinationPath = @"c:\folder",
+                              FileExtensions = "*.bak",
                               NoConfirm = true
                           };
 
@@ -88,6 +89,7 @@ namespace Comsec.SqlPrune.Commands
                               DatabaseName = "DbName",
                               DestinationPath = @"c:\folder",
                               DateTime = new DateTime(2013, 10, 27, 1, 0, 3),
+                              FileExtensions = "*.bak",
                               NoConfirm = true
                           };
 
@@ -141,6 +143,7 @@ namespace Comsec.SqlPrune.Commands
                 DatabaseName = "DbName",
                 DestinationPath = @"c:\folder",
                 Date = new DateTime(2013, 10, 27),
+                FileExtensions = "*.bak",
                 NoConfirm = true
             };
 
@@ -164,7 +167,7 @@ namespace Comsec.SqlPrune.Commands
                         {
                             {"s3://bucket/DbName_backup_2013_10_27_010003_3477881.zip", 1093753342},
                             {"s3://bucket/DbName_backup_2013_10_27_020003_3477822.bak", 1493753344},
-                            {"s3://bucket/DbName_backup_2014_11_30_010002_5357881.bak", 1693732345},
+                            {"s3://bucket/DbName_backup_2014_11_30_010002_5357881.bak.7z", 1693732345},
                         };
 
             s3ProviderMock

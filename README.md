@@ -42,13 +42,14 @@ The utility relies on the date *in the file name*, **not** the file system's cre
  * __path__ is the path to a local folder or an S3 bucket containting .bak files (e.g. `c:\sql-backups` or `s3://bucket-name/backups`)
  * __-prune__: The flag to activate the 'prune' mode
  * __-delete__ is a flag you must add otherwise files will not be deleted
- * __-no-confim__ is flag you can use if you don't want to confirm before any file is deleted
+ * __-fileExtensions__ is an optional parameter can use to restrict to different file extensions (see [File Extensions](#file-extensions))
+ * __-no-confim__ is flag you can use if you don't want to confirm before any file is deleted 
  * __-AWSProfileName__ is optional and can be used to override the value of the `AWSProfileName` app setting (see S3 Credentials)
  * __-AWSProfilesLocation__ is optional and can be used to override the value of the `AWSProfilesLocation` app setting (see S3 Credentials)
 
 Examples:
 
-Simply list which files would be pruned in a folder without deleting anthing (dry run):
+Simply list which `.bak` files would be pruned in a folder without deleting anthing (dry run):
 
     sqlprune E:\Backups
 
@@ -70,6 +71,7 @@ Confirm before deleting prunable backups for database names starting with `test`
  * __-dest__: The path to a local folder where to copy the file to
  * __-date-time__: OptionallySpecifies which date and time to retrieve
  * __-date__: OptionallySpecifies which date to retrieve
+ * __-fileExtensions__ is an optional parameter can use to restrict to different file extensions (see [File Extensions](#file-extensions))
  * __-no-confim__ is flag you can use if you don't want to confirm before any file is recovered
  * __-aws-profile__ is optional and defaults to the value of the `AWSProfileName` app setting (see S3 Credentials)
 
@@ -77,7 +79,7 @@ When multiple .bak files are found the most recent is used.
 
 Examples:
 
-Copy the most recent backup available for the database 'helloworld' from an S3 bucket:
+Copy the most recent `.bak` backup available for the database `helloworld` from an S3 bucket:
 
     sqlprune S3://bucket-name/test -recover -db-name helloworld -dest E:\Backups
 
@@ -90,6 +92,17 @@ Copy `helloWorld_backup_2014_06_20_010002_0957417.bak` from `E:\Backups` to the 
 1. Find the [latest release](https://github.com/comsechq/sql-prune/releases).
 2. Extract the zip in a folder.
 3. Run the command from the command line prompt.
+
+#### File Extensions
+
+By default the `prune` and `recover` commands restrict to files ending with `.bak` extension. 
+
+You can override this search pattern with the `-matchExpression` parameter. Comma separated values can be used.
+
+Example:
+
+- Use a different file extension for your backup files: `-fileExtensions .backup`
+- Match on multiple file extensions for your backup files: `-fileExtensions .bak,.bak.7z,.bak.rar`
 
 #### S3 Credentials
 

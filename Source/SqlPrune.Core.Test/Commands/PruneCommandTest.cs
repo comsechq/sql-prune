@@ -106,7 +106,7 @@ namespace Comsec.SqlPrune.Commands
                 .Setup(call => call.GetFiles(@"c:\sql-backups", "*.bak"))
                 .Returns(files);
             
-            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups"});
+            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups", FileExtensions = "*.bak"});
 
             s3ProviderMock
                 .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
@@ -138,7 +138,7 @@ namespace Comsec.SqlPrune.Commands
                 .Setup(call => call.FlagPrunableBackupsInSet(It.IsAny<IEnumerable<BakModel>>()))
                 .Callback<IEnumerable<BakModel>>((x) => x.First().Prunable = true);
 
-            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups", Delete = true, NoConfirm = true});
+            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups", Delete = true, FileExtensions = "*.bak", NoConfirm = true});
 
             s3ProviderMock
                 .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());

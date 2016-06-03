@@ -52,15 +52,9 @@ namespace Comsec.SqlPrune.Models
         /// </remarks>
         public bool? Prunable { get; set; }
 
-        public string Status
-        {
-            get
-            {
-                return Prunable.HasValue
-                    ? Prunable.Value ? "Prune" : "Keep"
-                    : "?";
-            }
-        }
+        public string Status => Prunable.HasValue
+            ? Prunable.Value ? "Prune" : "Keep"
+            : "?";
 
         public override string ToString()
         {

@@ -64,6 +64,7 @@
     <Compile Include="BakFilenameExtractorTest.cs" />
     <Compile Include="Commands\RecoverCommandTest.cs" />
     <Compile Include="DateTimeExtensions.cs" />
+    <Compile Include="Extensions\MatchingExtensionsTest.cs" />
     <Compile Include="Int64ExetensionsTest.cs" />
     <Compile Include="Models\CalendarModel.cs" />
     <Compile Include="Commands\PruneCommandTest.cs" />

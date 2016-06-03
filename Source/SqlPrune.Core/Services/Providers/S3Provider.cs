@@ -9,6 +9,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
+using Comsec.SqlPrune.Extensions;
 using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Sugar.Command;
 using Sugar.Extensions;
@@ -228,7 +229,7 @@ namespace Comsec.SqlPrune.Services.Providers
         /// Returns the names of files (including their paths) that match the specified search pattern in the specified bucket + directory.
         /// </summary>
         /// <param name="dirPath">The bucket + directory to search.</param>
-        /// <param name="searchPattern">The search patter (e.g. "*.txt").</param>
+        /// <param name="searchPatterns">The search pattern (e.g. "*.txt").</param>
         /// <returns>
         /// A dictionary listing each file found and its size (in bytes).
         /// </returns>
@@ -236,7 +237,7 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <remarks>
         /// System Files and Folders will be ignored
         /// </remarks>
-        public IDictionary<string, long> GetFiles(string dirPath, string searchPattern)
+        public IDictionary<string, long> GetFiles(string dirPath, params string[] searchPatterns)
         {
             var bucketName = ExtractBucketNameFromPath(dirPath);
             var subPath = dirPath.SubstringAfterChar(bucketName + "/");
@@ -254,23 +255,15 @@ namespace Comsec.SqlPrune.Services.Providers
 
             IEnumerable<S3Object> matches;
 
-            if (string.IsNullOrEmpty(searchPattern) || searchPattern == "*")
+            if (searchPatterns == null || searchPatterns.Length == 0 || searchPatterns.Length == 1 && searchPatterns[0] == "*")
             {
                 matches = allObjectsInBucket;
             }
-            else if (searchPattern.Count(x => x == '*') == 1)
-            {
-                var pattern = searchPattern.Replace("*", "");
-
-                matches = searchPattern.StartsWith("*")
-                    ? allObjectsInBucket.Where(x => x.Key.EndsWith(pattern))
-                    : allObjectsInBucket.Where(x => x.Key.StartsWith(pattern));
-            }
             else
             {
-                throw new ArgumentException("Invalid search pattern: only '', '*', '*.ext' or 'name*' are supported ", searchPattern);
+                matches = allObjectsInBucket.MatchOnAny(x => x.Key, searchPatterns);
             }
-
+            
             foreach (var s3Object in matches)
             {
                 var completePath = $"s3://{bucketName}/{s3Object.Key}";
