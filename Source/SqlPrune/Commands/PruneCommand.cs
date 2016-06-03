@@ -41,7 +41,7 @@ namespace Comsec.SqlPrune.Commands
             /// <value>
             /// The file extensions.
             /// </value>
-            [Parameter("fileExtensions", Default = "*.bak")]
+            [Parameter("file-extensions", Default = "*.bak")]
             public string FileExtensions { get; set; }
 
             /// <summary>

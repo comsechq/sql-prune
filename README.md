@@ -42,7 +42,7 @@ The utility relies on the date *in the file name*, **not** the file system's cre
  * __path__ is the path to a local folder or an S3 bucket containting .bak files (e.g. `c:\sql-backups` or `s3://bucket-name/backups`)
  * __-prune__: The flag to activate the 'prune' mode
  * __-delete__ is a flag you must add otherwise files will not be deleted
- * __-fileExtensions__ is an optional parameter can use to restrict to different file extensions (see [File Extensions](#file-extensions))
+ * __-file-extensions__ is an optional parameter can use to restrict to different file extensions (see [File Extensions](#file-extensions))
  * __-no-confim__ is flag you can use if you don't want to confirm before any file is deleted 
  * __-AWSProfileName__ is optional and can be used to override the value of the `AWSProfileName` app setting (see S3 Credentials)
  * __-AWSProfilesLocation__ is optional and can be used to override the value of the `AWSProfilesLocation` app setting (see S3 Credentials)
@@ -71,7 +71,7 @@ Confirm before deleting prunable backups for database names starting with `test`
  * __-dest__: The path to a local folder where to copy the file to
  * __-date-time__: OptionallySpecifies which date and time to retrieve
  * __-date__: OptionallySpecifies which date to retrieve
- * __-fileExtensions__ is an optional parameter can use to restrict to different file extensions (see [File Extensions](#file-extensions))
+ * __-file-extensions__ is an optional parameter can use to restrict to different file extensions (see [File Extensions](#file-extensions))
  * __-no-confim__ is flag you can use if you don't want to confirm before any file is recovered
  * __-aws-profile__ is optional and defaults to the value of the `AWSProfileName` app setting (see S3 Credentials)
 
@@ -101,8 +101,8 @@ You can override this search pattern with the `-matchExpression` parameter. Comm
 
 Example:
 
-- Use a different file extension for your backup files: `-fileExtensions .backup`
-- Match on multiple file extensions for your backup files: `-fileExtensions .bak,.bak.7z,.bak.rar`
+- Use a different file extension for your backup files: `-file-extensions .backup`
+- Match on multiple file extensions for your backup files: `-file-extensions .bak,.bak.7z,.bak.rar`
 
 #### S3 Credentials
 
