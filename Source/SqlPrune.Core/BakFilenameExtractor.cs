@@ -18,8 +18,8 @@ namespace Comsec.SqlPrune
         /// - the date the file was created.
         /// </summary>
         /// <param name="filename">The database filename (e.g. "db1_backup_2010_11_20_010203_1234567.bak").</param>
-        /// <param name="databaseName">The name of the database (extracted form the <see cref="filename"/>).</param>
-        /// <param name="created">The creation date and time of the file (extracted from the <see cref="filename"/>).</param>
+        /// <param name="databaseName">The name of the database (extracted form the <see cref="filename" />).</param>
+        /// <param name="created">The creation date and time of the file (extracted from the <see cref="filename" />).</param>
         /// <returns></returns>
         public static bool ValidateFilenameAndExtract(string filename, out string databaseName, out DateTime created)
         {
@@ -27,8 +27,8 @@ namespace Comsec.SqlPrune
 
             databaseName = null;
             created = new DateTime();
-
-            if (!string.IsNullOrEmpty(filename) && filename.EndsWith(".bak", StringComparison.OrdinalIgnoreCase))
+            
+            if (!string.IsNullOrWhiteSpace(filename))
             {
                 var fileName = filename.SubstringAfterLastChar(@"\");
 

@@ -35,7 +35,7 @@ namespace Comsec.SqlPrune.Commands
                               Path = "s3://bucket",
                               DatabaseName = "DbName",
                               DestinationPath = @"c:\folder",
-                              FileExtensions = "*.bak",
+                              FileExtensions = "*.bak,*.bak.7z",
                               NoConfirm = true
                           };
 
@@ -52,14 +52,15 @@ namespace Comsec.SqlPrune.Commands
                 .Returns(true);
 
             s3ProviderMock
-                .Setup(call => call.ExtractFilenameFromPath("s3://bucket/DbName_backup_2014_11_30_010002_5357881.bak"))
-                .Returns("DbName_backup_2014_11_30_010002_5357881.bak");
+                .Setup(call => call.ExtractFilenameFromPath("s3://bucket/DbName_backup_2014_12_30_010001_3427331.bak.7z"))
+                .Returns("DbName_backup_2014_12_30_010001_3427331.bak.7z");
 
             var files = new Dictionary<string, long>
                         {
                             {"s3://bucket/DbName_backup_2013_10_27_010003_3477881.zip", 1093753342},
                             {"s3://bucket/DbName_backup_2013_10_27_010003_3477881.bak", 1493753344},
                             {"s3://bucket/DbName_backup_2014_11_30_010002_5357881.bak", 1693732345},
+                            {"s3://bucket/DbName_backup_2014_12_30_010001_3427331.bak.7z", 90349033}
                         };
 
             s3ProviderMock
@@ -75,7 +76,7 @@ namespace Comsec.SqlPrune.Commands
             s3ProviderMock
                 .Verify(
                     call =>
-                        call.CopyToLocalAsync("s3://bucket/DbName_backup_2014_11_30_010002_5357881.bak", @"c:\folder\DbName_backup_2014_11_30_010002_5357881.bak"), Times.Once());
+                        call.CopyToLocalAsync("s3://bucket/DbName_backup_2014_12_30_010001_3427331.bak.7z", @"c:\folder\DbName_backup_2014_12_30_010001_3427331.bak.7z"), Times.Once());
             
             Assert.AreEqual((int) ExitCode.Success, result);
         }

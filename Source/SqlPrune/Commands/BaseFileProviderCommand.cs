@@ -12,6 +12,7 @@ namespace Comsec.SqlPrune.Commands
     /// Base class for commands that depending on file providers.
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    /// <seealso cref="Sugar.Command.BoundCommand{T}" />
     public abstract class BaseFileProviderCommand<T> : BoundCommand<T> where T : class, new()
     {
         #region Dependencies

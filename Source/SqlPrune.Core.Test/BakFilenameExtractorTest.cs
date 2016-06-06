@@ -21,18 +21,7 @@ namespace Comsec.SqlPrune
             Assert.IsNull(dbName);
             Assert.AreEqual(DateTime.MinValue, created);
         }
-
-        [Test]
-        public void TestValidateFilenameAndExtractDateWhenNotEndingWithDotBak()
-        {
-            string dbName;
-            DateTime created;
-
-            Assert.IsFalse(BakFilenameExtractor.ValidateFilenameAndExtract("dbname1_backup_2014_03_29_010006_1882358", out dbName, out created));
-            Assert.IsNull(dbName);
-            Assert.AreEqual(DateTime.MinValue, created);
-        }
-
+        
         [Test]
         public void TestValidateFilenameAndExtractDateWhenNoUnderscores()
         {

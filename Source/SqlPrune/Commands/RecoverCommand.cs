@@ -218,7 +218,7 @@ namespace Comsec.SqlPrune.Commands
             }
             else
             {
-                var prompt = string.Format("Copy {0} to {1}?", mostRecentFile.Path, options.DestinationPath);
+                var prompt = $"Copy {mostRecentFile.Path} to {options.DestinationPath}?";
 
                 copy = Confirm.Prompt(prompt, "y");
             }
