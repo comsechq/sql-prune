@@ -9,7 +9,7 @@ namespace Comsec.SqlPrune.Factories
     {
         private BakFileListFactory factory;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void SetupOnce()
         {
             var names = new[] {"db1", "db2", "db3"};
@@ -22,7 +22,7 @@ namespace Comsec.SqlPrune.Factories
         {
             var result = BakFileListFactory.CreateDigitString(7);
 
-            Assert.IsNotNullOrEmpty(result);
+            Assert.That(result, Is.Not.Null.Or.Empty);
             Assert.AreEqual(7, result.Length);
         }
 

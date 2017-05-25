@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Amazon;
 using Amazon.Runtime;
+using Amazon.Runtime.CredentialManagement;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -21,6 +21,60 @@ namespace Comsec.SqlPrune.Services.Providers
     /// </summary>
     public class S3Provider : IFileProvider
     {
+        private AmazonS3Client client;
+
+        private AmazonS3Client Client
+        {
+            get
+            {
+                if (client != null)
+                {
+                    return client;
+                }
+
+                RegionEndpoint region = null;
+
+                // Region override
+                var regionName = Parameters.Current.AsString("region", null);
+                if (!string.IsNullOrEmpty(regionName))
+                {
+                    region = RegionEndpoint.GetBySystemName(regionName);
+                }
+
+                // Profile
+                var profileName = Parameters.Current.AsString("profile", null);
+                if (string.IsNullOrEmpty(profileName))
+                {
+                    client = region == null ? new AmazonS3Client() : new AmazonS3Client(region);
+                }
+                else
+                {
+                    var profilesLocation = Parameters.Current.AsString("profiles-location", null);
+                    if (string.IsNullOrEmpty(profilesLocation))
+                    {
+                        var userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+                        profilesLocation = Path.Combine(userFolder, @".aws\config");
+                    }
+
+                    AWSCredentials credentials;
+
+                    var chain = new CredentialProfileStoreChain(profilesLocation);
+
+                    if (!chain.TryGetAWSCredentials(profileName, out credentials))
+                    {
+                        throw new AmazonClientException("Unable to initialise AWS credentials from profile name");
+                    }
+
+                    client = region == null
+                        ? new AmazonS3Client(credentials)
+                        : new AmazonS3Client(credentials, region);
+                }
+
+                return client;
+            }
+        }
+
         /// <summary>
         /// Method called by the command to determine which <see cref="IFileProvider" /> implemetation should run.
         /// </summary>
@@ -33,61 +87,11 @@ namespace Comsec.SqlPrune.Services.Providers
         }
 
         /// <summary>
-        /// Converts a region string to a region end point.
-        /// </summary>
-        /// <returns></returns>
-        public RegionEndpoint GetRegion()
-        {
-            var region = Parameters.Current.AsString("region");
-
-            if (string.IsNullOrEmpty(region))
-            {
-                region = ConfigurationManager.AppSettings["AWSDefaultRegionEndPoint"];
-            }
-
-            return RegionEndpoint.GetBySystemName(region);
-        }
-
-        /// <summary>
-        /// Initilizes the S3 service.
-        /// </summary>
-        private AmazonS3Client InitialiseClient()
-        {
-            // CMD line parameter override?
-            var profileName = Parameters.Current.AsString("AWSProfileName");
-            if (string.IsNullOrEmpty(profileName))
-            {
-                // App setting
-                profileName = ConfigurationManager.AppSettings["AWSProfileName"];
-                if (string.IsNullOrEmpty(profileName))
-                {
-                    profileName = "default";
-                }
-            }
-
-            // CMD line parameter override?
-            var profileLocation = Parameters.Current.AsString("AWSProfilesLocation");
-            if (string.IsNullOrEmpty(profileLocation))
-            {
-                // App setting
-                profileLocation = ConfigurationManager.AppSettings["AWSProfilesLocation"];
-                if (string.IsNullOrEmpty(profileLocation))
-                {
-                    profileLocation = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\.aws\config";
-                }
-            }
-
-            var credentials = new StoredProfileAWSCredentials(profileName, profileLocation);
-
-            return new AmazonS3Client(credentials, RegionEndpoint.EUWest1);
-        }
-
-        /// <summary>
         /// Extracts the bucket name from path.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
-        public string ExtractBucketNameFromPath(string path)
+        private string ExtractBucketNameFromPath(string path)
         {
             return path.SubstringAfterChar("s3://").SubstringBeforeChar("/");
         }
@@ -109,8 +113,6 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <returns></returns>
         public bool IsDirectory(string path)
         {
-            var client = InitialiseClient();
-
             var request = new GetBucketLocationRequest
                           {
                               BucketName = ExtractBucketNameFromPath(path)
@@ -119,7 +121,7 @@ namespace Comsec.SqlPrune.Services.Providers
             try
             {
                 // If the bucket location can be retrieved it's a valid bucket
-                var response = client.GetBucketLocation(request);
+                var response = Client.GetBucketLocation(request);
 
                 return response.HttpStatusCode == HttpStatusCode.OK;
             }
@@ -130,7 +132,7 @@ namespace Comsec.SqlPrune.Services.Providers
                     return false;
                 }
 
-                throw ex;
+                throw;
             }
         }
 
@@ -144,21 +146,16 @@ namespace Comsec.SqlPrune.Services.Providers
             var bucketName = ExtractBucketNameFromPath(path);
             var subPath = path.SubstringAfterChar(bucketName + "/");
 
-            var client = InitialiseClient();
-
             var request = new GetObjectMetadataRequest
-            {
-                BucketName = bucketName,
-                Key = subPath
-            };
+                          {
+                              BucketName = bucketName,
+                              Key = subPath
+                          };
 
             try
             {
-                var response = client.GetObjectMetadata(request);
-
-                return response == null
-                    ? -1
-                    : response.ContentLength;
+                var response = Client.GetObjectMetadata(request);
+                return response?.ContentLength ?? -1;
             }
             catch(AmazonS3Exception ex)
             {
@@ -174,10 +171,10 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <summary>
         /// Listings the objects.
         /// </summary>
-        /// <param name="client">The client.</param>
         /// <param name="bucketName">Name of the bucket (e.g. "bucket-name").</param>
         /// <param name="prefix">The prefix (e.g. "/folder/filestart").</param>
-        private static IList<S3Object> ListAllObjects(IAmazonS3 client, string bucketName, string prefix)
+        /// <returns></returns>
+        private IList<S3Object> ListAllObjects(string bucketName, string prefix)
         {
             var objects = new List<S3Object>();
 
@@ -192,7 +189,7 @@ namespace Comsec.SqlPrune.Services.Providers
 
                 do
                 {
-                    var response = client.ListObjects(request);
+                    var response = Client.ListObjects(request);
 
                     // Process response.
                     objects.AddRange(response.S3Objects);
@@ -247,9 +244,7 @@ namespace Comsec.SqlPrune.Services.Providers
                 subPath = null;
             }
 
-            var client = InitialiseClient();
-
-            var allObjectsInBucket = ListAllObjects(client, bucketName, subPath);
+            var allObjectsInBucket = ListAllObjects(bucketName, subPath);
 
             var results = new Dictionary<string, long>(allObjectsInBucket.Count);
 
@@ -283,15 +278,13 @@ namespace Comsec.SqlPrune.Services.Providers
             var bucketName = ExtractBucketNameFromPath(path);
             var subPath = path.SubstringAfterChar(bucketName + "/");
 
-            var client = InitialiseClient();
-
             var request = new DeleteObjectRequest
                           {
                               BucketName = bucketName,
                               Key = subPath
                           };
 
-            client.DeleteObject(request);
+            Client.DeleteObject(request);
         }
 
         /// <summary>
@@ -305,9 +298,7 @@ namespace Comsec.SqlPrune.Services.Providers
             var bucketName = ExtractBucketNameFromPath(path);
             var subPath = path.SubstringAfterChar(bucketName + "/");
 
-            var client = InitialiseClient();
-
-            var utlity = new TransferUtility(client);
+            var utlity = new TransferUtility(Client);
 
             var request = new TransferUtilityDownloadRequest
                           {

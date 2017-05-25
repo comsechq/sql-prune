@@ -278,7 +278,7 @@ namespace Comsec.SqlPrune.Services
         /// <returns></returns>
         private static string[] ReadAllFileList()
         {
-            var listing = File.ReadAllText(@"..\..\Samples\test-files.txt");
+            var listing = File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, @"..\..\Samples\test-files.txt"));
 
             return Regex.Split(listing, Environment.NewLine);
         }

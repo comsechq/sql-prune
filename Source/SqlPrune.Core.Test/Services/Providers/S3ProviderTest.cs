@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Amazon;
 using NUnit.Framework;
 
 namespace Comsec.SqlPrune.Services.Providers
@@ -29,14 +28,6 @@ namespace Comsec.SqlPrune.Services.Providers
             Assert.IsFalse(provider.ShouldRun(@"e:\\boo"));
             Assert.IsFalse(provider.ShouldRun(@"ftp://boo"));
             Assert.IsFalse(provider.ShouldRun(@"http://boo"));
-        }
-
-        [Test]
-        public void TestGetDefaultRegion()
-        {
-            var region = provider.GetRegion();
-
-            Assert.AreEqual(RegionEndpoint.EUWest1, region);
         }
 
         [Test]
