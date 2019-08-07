@@ -31,3 +31,5 @@ _ReSharper*/
 building.txt
 *.tss
 *.json
+Source/Packages/*
+Source/.vs/*
