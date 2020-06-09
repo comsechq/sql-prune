@@ -4,10 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Comsec.SqlPrune.Extensions;
-using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Sugar.Extensions;
 
-namespace Comsec.SqlPrune.Services.Providers
+namespace Comsec.SqlPrune.Providers
 {
     /// <summary>
     /// Wrapper service for access to <see cref="System.IO.File"/> and <see cref="System.IO.Directory"/>
@@ -15,13 +14,14 @@ namespace Comsec.SqlPrune.Services.Providers
     public class LocalFileSystemProvider : IFileProvider
     {
         /// <summary>
-        /// Method called by the command to determine which <see cref="IFileProvider" /> implemetation should run.
+        /// Method called by the command to determine which <see cref="IFileProvider" /> implementation should run.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
         public bool ShouldRun(string path)
         {
-            return path != null && (!path.Contains("://") || !path.StartsWith(@"\\"));
+            return !string.IsNullOrEmpty(path) &&
+                   !(path.StartsWith(@"\\") || path.Contains("://"));
         }
 
         /// <summary>
@@ -39,13 +39,13 @@ namespace Comsec.SqlPrune.Services.Providers
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
-        public bool IsDirectory(string path)
+        public Task<bool> IsDirectory(string path)
         {
             try
             {
                 var pathAttributes = File.GetAttributes(path);
 
-                return (pathAttributes & FileAttributes.Directory) == FileAttributes.Directory;
+                return Task.FromResult((pathAttributes & FileAttributes.Directory) == FileAttributes.Directory);
             }
             catch(DirectoryNotFoundException e)
             {
@@ -56,7 +56,7 @@ namespace Comsec.SqlPrune.Services.Providers
                 Console.WriteLine(e.Message);
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
         /// <summary>
@@ -64,17 +64,17 @@ namespace Comsec.SqlPrune.Services.Providers
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
-        public long GetFileSize(string path)
+        public Task<long> GetFileSize(string path)
         {
             try
             {
                 var info = new FileInfo(path);
 
-                return info.Length;
+                return Task.FromResult(info.Length);
             }
             catch (FileNotFoundException)
             {
-                return -1;
+                return Task.FromResult((long) -1);
             }
         }
 
@@ -89,13 +89,13 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <remarks>
         /// System Files and Folders will be ignored
         /// </remarks>
-        public IDictionary<string, long> GetFiles(string dirPath, params string[] searchPattern)
+        public Task<IDictionary<string, long>> GetFiles(string dirPath, params string[] searchPattern)
         {
             var info = new DirectoryInfo(dirPath);
 
             var matchingFiles = WalkDirectory(info, searchPattern);
 
-            var result = new Dictionary<string, long>(matchingFiles.Count);
+            IDictionary<string, long> result = new Dictionary<string, long>(matchingFiles.Count);
 
             foreach (var filename in matchingFiles)
             {
@@ -104,7 +104,7 @@ namespace Comsec.SqlPrune.Services.Providers
                 result.Add(filename, fileInfo.Length);
             }
 
-            return result;
+            return Task.FromResult(result);
         }
 
         /// <summary>
@@ -165,19 +165,11 @@ namespace Comsec.SqlPrune.Services.Providers
         /// Deletes the specified file.
         /// </summary>
         /// <param name="path">The path.</param>
-        public void Delete(string path)
+        public Task Delete(string path)
         {
             File.Delete(path);
-        }
 
-        /// <summary>
-        /// Copies to local.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="destination">The destination path.</param>
-        public void CopyToLocal(string path, string destination)
-        {
-            File.Copy(path, destination);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -186,9 +178,11 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <param name="path">The path.</param>
         /// <param name="destinationPath">The destination path.</param>
         /// <returns></returns>
-        public async Task CopyToLocalAsync(string path, string destinationPath)
+        public Task CopyToLocalAsync(string path, string destinationPath)
         {
-            await Task.Factory.StartNew(() => CopyToLocal(path, destinationPath));
+            File.Copy(path, destinationPath);
+
+            return Task.CompletedTask;
         }
     }
 }

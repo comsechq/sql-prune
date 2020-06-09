@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Comsec.SqlPrune.Interfaces.Services.Providers;
+using System.Threading.Tasks;
 using Comsec.SqlPrune.Models;
-using Comsec.SqlPrune.Services.Providers;
+using Comsec.SqlPrune.Providers;
 using Sugar.Command;
 
 namespace Comsec.SqlPrune.Commands
@@ -15,58 +15,44 @@ namespace Comsec.SqlPrune.Commands
     /// <seealso cref="Sugar.Command.BoundCommand{T}" />
     public abstract class BaseFileProviderCommand<T> : BoundCommand<T> where T : class, new()
     {
-        #region Dependencies
+        private readonly IEnumerable<IFileProvider> fileProviders;
 
         /// <summary>
-        /// Gets or sets the file service.
+        /// Constructor.
         /// </summary>
-        /// <value>
-        /// The file service.
-        /// </value>
-        public IFileProvider[] FileProviders { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseFileProviderCommand{T}"/> class.
-        /// </summary>
-        protected BaseFileProviderCommand()
+        /// <param name="fileProviders"></param>
+        protected BaseFileProviderCommand(IEnumerable<IFileProvider> fileProviders)
         {
-            FileProviders = new IFileProvider[]
-                            {
-                                new S3Provider(),
-                                new LocalFileSystemProvider()
-                            };
+            this.fileProviders = fileProviders;
         }
-
-        #endregion
 
         /// <summary>
         /// Gets the provider.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="provider">The selected provider.</param>
-        /// <returns>True if a provider for the specified <see cref="path"/> was found.</returns>
-        protected bool GetProvider(string path, out IFileProvider provider)
+        /// <returns>Null when no provider for the specified <see cref="path"/> was found.</returns>
+        protected async Task<IFileProvider> GetProvider(string path)
         {
-            var success = true;
-
-            provider = FileProviders.FirstOrDefault(p => p.ShouldRun(path));
+            var provider = fileProviders.FirstOrDefault(p => p.ShouldRun(path));
 
             if (provider == null)
             {
                 Console.WriteLine("Unrecognised path. You must provide a path to a local folder or to an Amazon S3 bucket.");
                 Console.WriteLine(@"Example: x:\path\to\folder or s3://bucket-name/optionally/with/path/folder");
-
-                success = false;
             }
-
-            if (string.IsNullOrEmpty(path) || path.StartsWith("-") || !provider.IsDirectory(path))
+            else
             {
-                Console.WriteLine("Invalid path: You must provide a path to an existing local folder or drive.");
+                var isDirectory = await provider.IsDirectory(path);
 
-                success = false;
+                if (string.IsNullOrEmpty(path) || path.StartsWith("-") || !isDirectory)
+                {
+                    Console.WriteLine("Invalid path: You must provide a path to an existing local folder or drive.");
+
+                    provider = null;
+                }
             }
-
-            return success;
+            
+            return provider;
         }
 
         /// <summary>

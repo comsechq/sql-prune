@@ -2,78 +2,61 @@
 using System.Collections.Generic;
 using System.Linq;
 using Comsec.SqlPrune.Factories;
-using Comsec.SqlPrune.Interfaces.Services;
-using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Comsec.SqlPrune.Models;
-using Comsec.SqlPrune.Services.Providers;
+using Comsec.SqlPrune.Providers;
+using Comsec.SqlPrune.Services;
+using LightInject;
 using Moq;
 using NUnit.Framework;
 
 namespace Comsec.SqlPrune.Commands
 {
     [TestFixture]
-    public class PruneCommandTest : AutoMockingTest
+    [Parallelizable]
+    public class PruneCommandTest
     {
-        private PruneCommand command;
-
-        private Mock<IFileProvider> localFileSystemProviderMock;
-        private Mock<IFileProvider> s3ProviderMock;
-        
-        [SetUp]
-        public void Setup()
+        public PruneCommand Setup(out MockingServiceContainer context, out Mock<IFileProvider> provider1, out Mock<IFileProvider> provider2)
         {
-            localFileSystemProviderMock = new Mock<IFileProvider>();
-            s3ProviderMock = new Mock<IFileProvider>();
+            context = new MockingServiceContainer();
 
-            localFileSystemProviderMock.Setup(call => call.ShouldRun(It.IsAny<string>()))
-                                       .Returns(true);
+            provider1 = new Mock<IFileProvider>();
+            provider2 = new Mock<IFileProvider>();
 
-            s3ProviderMock.Setup(call => call.ShouldRun(It.IsAny<string>()))
-                          .Returns(false);
+            provider1.Setup(call => call.ShouldRun(It.IsAny<string>()))
+                     .Returns(false);
 
-            command = Create<PruneCommand>();
+            provider2.Setup(call => call.ShouldRun(It.IsAny<string>()))
+                     .Returns(true);
 
-            command.FileProviders = new[] {localFileSystemProviderMock.Object, s3ProviderMock.Object};
-        }
+            context.RegisterInstance<IEnumerable<IFileProvider>>(new List<IFileProvider>
+                                                                 {
+                                                                     provider1.Object,
+                                                                     provider2.Object
+                                                                 });
 
-        [Test]
-        public void TestFileProvidersOrder()
-        {
-            var instance = new PruneCommand();
+            context.Register<PruneCommand>();
 
-            Assert.AreEqual(2, instance.FileProviders.Length);
-            Assert.AreEqual(typeof(S3Provider), instance.FileProviders[0].GetType());
-            Assert.AreEqual(typeof(LocalFileSystemProvider), instance.FileProviders[1].GetType());
+            var command = context.GetInstance<PruneCommand>();
+
+            return command;
         }
 
         [Test]
         public void TestExecuteWhenPathNotSet()
         {
-            var result = command.Execute(new PruneCommand.Options());
+            var command = Setup(out var context, out var provider1, out var provider2);
 
-            s3ProviderMock
-                .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
+            provider1.Setup(call => call.ShouldRun(null))
+                     .Returns(false);
 
-            localFileSystemProviderMock
-                .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
-
-            Assert.AreEqual(-1, result);
-        }
-
-        [Test]
-        public void TestExecuteWhenPathIsFlag()
-        {
-            localFileSystemProviderMock
-                .Setup(call => call.IsDirectory(@"-verbose"))
-                .Returns(false);
+            provider2.Setup(call => call.ShouldRun(null))
+                     .Returns(false);
 
             var result = command.Execute(new PruneCommand.Options());
 
-            s3ProviderMock
-                .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
-
-            localFileSystemProviderMock
-                .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
+            provider1.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
+            
+            provider2.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
 
             Assert.AreEqual(-1, result);
         }
@@ -81,76 +64,79 @@ namespace Comsec.SqlPrune.Commands
         [Test]
         public void TestExecuteWhenPathIsNotDirectory()
         {
-            localFileSystemProviderMock
-                .Setup(call => call.IsDirectory(@"c:\sql-backups\backup.bak"))
-                .Returns(false);
+            var command = Setup(out var context, out var provider1, out var provider2);
+
+            provider1.Setup(call => call.ShouldRun(@"c:\sql-backups\backup.bak"))
+                     .Returns(true);
+
+            provider1.Setup(call => call.IsDirectory(@"c:\sql-backups\backup.bak"))
+                     .ReturnsAsync(false);
 
             var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups\backup.bak"});
 
-            s3ProviderMock
-                .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
+            provider2.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
 
             Assert.AreEqual(-1, result);
         }
 
         [Test]
-        public void TestExecuteWhenPathIsDirectoryButSimulationOnlys()
+        public void TestExecuteWhenPathIsDirectoryButSimulationOnly()
         {
-            localFileSystemProviderMock
-                .Setup(call => call.IsDirectory(@"c:\sql-backups"))
-                .Returns(true);
+            var command = Setup(out var context, out var provider1, out var provider2);
+
+            provider1.Setup(call => call.ShouldRun(@"c:\sql-backups"))
+                     .Returns(true);
+
+            provider1.Setup(call => call.IsDirectory(@"c:\sql-backups"))
+                     .ReturnsAsync(true);
 
             var files = new BakFileListFactory().WithDatabases("db1").Create(DateTime.Now, 2);
 
-            localFileSystemProviderMock
-                .Setup(call => call.GetFiles(@"c:\sql-backups", "*.bak"))
-                .Returns(files);
+            provider1.Setup(call => call.GetFiles(@"c:\sql-backups", "*.bak"))
+                     .ReturnsAsync(files);
             
             var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups", FileExtensions = "*.bak"});
 
-            s3ProviderMock
-                .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
+            provider2.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
 
-            Mock<IPruneService>()
-                .Verify(call => call.FlagPrunableBackupsInSet(It.Is<IEnumerable<BakModel>>(x => x.Count() == 2)),
-                    Times.Once());
+            context.GetMock<IPruneService>()
+                   .Verify(call => call.FlagPrunableBackupsInSet(It.Is<IEnumerable<BakModel>>(x => x.Count() == 2)),
+                       Times.Once());
 
-            localFileSystemProviderMock
-                .Verify(call => call.Delete(It.IsAny<string>()), Times.Never());
+            provider1.Verify(call => call.Delete(It.IsAny<string>()), Times.Never());
             
             Assert.AreEqual(0, result);
         }
 
         [Test]
-        public void TestExecuteWhenPathIsDirectotyAndDeleteWithoutConfirmation()
+        public void TestExecuteWhenPathIsDirectoryAndDeleteWithoutConfirmation()
         {
-            localFileSystemProviderMock
-                .Setup(call => call.IsDirectory(@"c:\sql-backups"))
-                .Returns(true);
+            var command = Setup(out var context, out var provider1, out var provider2);
+
+            provider1.Setup(call => call.ShouldRun(@"c:\sql-backups"))
+                     .Returns(true);
+
+            provider1.Setup(call => call.IsDirectory(@"c:\sql-backups"))
+                     .ReturnsAsync(true);
 
             var files = new BakFileListFactory().WithDatabases("db1").Create(DateTime.Now, 2);
 
-            localFileSystemProviderMock
-                .Setup(call => call.GetFiles(@"c:\sql-backups", "*.bak"))
-                .Returns(files);
+            provider1.Setup(call => call.GetFiles(@"c:\sql-backups", "*.bak"))
+                     .ReturnsAsync(files);
 
-            Mock<IPruneService>()
+            context.GetMock<IPruneService>()
                 .Setup(call => call.FlagPrunableBackupsInSet(It.IsAny<IEnumerable<BakModel>>()))
                 .Callback<IEnumerable<BakModel>>((x) => x.First().Prunable = true);
 
             var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups", Delete = true, FileExtensions = "*.bak", NoConfirm = true});
 
-            s3ProviderMock
-                .Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
+            provider2.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
 
-            localFileSystemProviderMock
-                .Verify(call => call.Delete(It.IsAny<string>()), Times.Once());
+            provider1.Verify(call => call.Delete(It.IsAny<string>()), Times.Once());
 
-            localFileSystemProviderMock
-                .Verify(call => call.Delete(files.Keys.First()), Times.Once());
+            provider1.Verify(call => call.Delete(files.Keys.First()), Times.Once());
 
             Assert.AreEqual(0, result);
         }
-        
     }
 }

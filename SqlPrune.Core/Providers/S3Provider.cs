@@ -1,86 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Amazon;
-using Amazon.Runtime;
-using Amazon.Runtime.CredentialManagement;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Comsec.SqlPrune.Extensions;
-using Comsec.SqlPrune.Interfaces.Services.Providers;
-using Sugar.Command;
 using Sugar.Extensions;
 
-namespace Comsec.SqlPrune.Services.Providers
+namespace Comsec.SqlPrune.Providers
 {
     /// <summary>
     /// Interface to wrap calls to the S3 service
     /// </summary>
     public class S3Provider : IFileProvider
     {
-        private AmazonS3Client client;
+        private readonly IAmazonS3 s3Client;
 
-        private AmazonS3Client Client
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="s3Client"></param>
+        public S3Provider(IAmazonS3 s3Client)
         {
-            get
-            {
-                if (client != null)
-                {
-                    return client;
-                }
-
-                RegionEndpoint region = null;
-
-                // Region override
-                var regionName = Parameters.Current.AsString("region", null);
-                if (!string.IsNullOrEmpty(regionName))
-                {
-                    region = RegionEndpoint.GetBySystemName(regionName);
-                }
-
-                // Profile
-                var profileName = Parameters.Current.AsString("profile", null);
-                if (string.IsNullOrEmpty(profileName))
-                {
-                    client = region == null ? new AmazonS3Client() : new AmazonS3Client(region);
-                }
-                else
-                {
-                    var profilesLocation = Parameters.Current.AsString("profiles-location", null);
-                    if (string.IsNullOrEmpty(profilesLocation))
-                    {
-                        var userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-                        profilesLocation = Path.Combine(userFolder, @".aws\config");
-                    }
-
-                    AWSCredentials credentials;
-
-                    var chain = new CredentialProfileStoreChain(profilesLocation);
-
-                    if (!chain.TryGetAWSCredentials(profileName, out credentials))
-                    {
-                        throw new AmazonClientException("Unable to initialise AWS credentials from profile name");
-                    }
-
-                    client = region == null
-                        ? new AmazonS3Client(credentials)
-                        : new AmazonS3Client(credentials, region);
-                }
-
-                return client;
-            }
+            this.s3Client = s3Client;
         }
 
         /// <summary>
-        /// Method called by the command to determine which <see cref="IFileProvider" /> implemetation should run.
+        /// Method called by the command to determine which <see cref="IFileProvider" /> implementation should run.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         public bool ShouldRun(string path)
         {
             return path != null && path.StartsWith("s3://", StringComparison.InvariantCultureIgnoreCase);
@@ -111,7 +61,7 @@ namespace Comsec.SqlPrune.Services.Providers
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
-        public bool IsDirectory(string path)
+        public async Task<bool> IsDirectory(string path)
         {
             var request = new GetBucketLocationRequest
                           {
@@ -121,7 +71,7 @@ namespace Comsec.SqlPrune.Services.Providers
             try
             {
                 // If the bucket location can be retrieved it's a valid bucket
-                var response = Client.GetBucketLocation(request);
+                var response = await s3Client.GetBucketLocationAsync(request);
 
                 return response.HttpStatusCode == HttpStatusCode.OK;
             }
@@ -141,7 +91,7 @@ namespace Comsec.SqlPrune.Services.Providers
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>-1 if the object doesn't exist</returns>
-        public long GetFileSize(string path)
+        public async Task<long> GetFileSize(string path)
         {
             var bucketName = ExtractBucketNameFromPath(path);
             var subPath = path.SubstringAfterChar(bucketName + "/");
@@ -154,7 +104,7 @@ namespace Comsec.SqlPrune.Services.Providers
 
             try
             {
-                var response = Client.GetObjectMetadata(request);
+                var response = await s3Client.GetObjectMetadataAsync(request);
                 return response?.ContentLength ?? -1;
             }
             catch(AmazonS3Exception ex)
@@ -174,7 +124,7 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <param name="bucketName">Name of the bucket (e.g. "bucket-name").</param>
         /// <param name="prefix">The prefix (e.g. "/folder/filestart").</param>
         /// <returns></returns>
-        private IList<S3Object> ListAllObjects(string bucketName, string prefix)
+        private async Task<IList<S3Object>> ListAllObjects(string bucketName, string prefix)
         {
             var objects = new List<S3Object>();
 
@@ -189,7 +139,7 @@ namespace Comsec.SqlPrune.Services.Providers
 
                 do
                 {
-                    var response = Client.ListObjects(request);
+                    var response = await s3Client.ListObjectsAsync(request);
 
                     // Process response.
                     objects.AddRange(response.S3Objects);
@@ -234,7 +184,7 @@ namespace Comsec.SqlPrune.Services.Providers
         /// <remarks>
         /// System Files and Folders will be ignored
         /// </remarks>
-        public IDictionary<string, long> GetFiles(string dirPath, params string[] searchPatterns)
+        public async Task<IDictionary<string, long>> GetFiles(string dirPath, params string[] searchPatterns)
         {
             var bucketName = ExtractBucketNameFromPath(dirPath);
             var subPath = dirPath.SubstringAfterChar(bucketName + "/");
@@ -244,7 +194,7 @@ namespace Comsec.SqlPrune.Services.Providers
                 subPath = null;
             }
 
-            var allObjectsInBucket = ListAllObjects(bucketName, subPath);
+            var allObjectsInBucket = await ListAllObjects(bucketName, subPath);
 
             var results = new Dictionary<string, long>(allObjectsInBucket.Count);
 
@@ -273,7 +223,7 @@ namespace Comsec.SqlPrune.Services.Providers
         /// Deletes the specified file.
         /// </summary>
         /// <param name="path">The path (e.g. s3://bucket-name/path/to/file.extension).</param>
-        public void Delete(string path)
+        public async Task Delete(string path)
         {
             var bucketName = ExtractBucketNameFromPath(path);
             var subPath = path.SubstringAfterChar(bucketName + "/");
@@ -284,7 +234,7 @@ namespace Comsec.SqlPrune.Services.Providers
                               Key = subPath
                           };
 
-            Client.DeleteObject(request);
+            await s3Client.DeleteObjectAsync(request);
         }
 
         /// <summary>
@@ -298,7 +248,7 @@ namespace Comsec.SqlPrune.Services.Providers
             var bucketName = ExtractBucketNameFromPath(path);
             var subPath = path.SubstringAfterChar(bucketName + "/");
 
-            var utlity = new TransferUtility(Client);
+            var utility = new TransferUtility(s3Client);
 
             var request = new TransferUtilityDownloadRequest
                           {
@@ -307,7 +257,7 @@ namespace Comsec.SqlPrune.Services.Providers
                               FilePath = destinationPath
                           };
 
-            await utlity.DownloadAsync(request);
+            await utility.DownloadAsync(request);
         }
     }
 }

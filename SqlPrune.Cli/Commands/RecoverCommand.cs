@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Comsec.SqlPrune.Interfaces.Services.Providers;
 using Comsec.SqlPrune.Models;
-using Comsec.SqlPrune.Services.Providers;
+using Comsec.SqlPrune.Providers;
 using Sugar.Command;
+using Sugar.Command.Binder;
 using Sugar.Extensions;
 
 namespace Comsec.SqlPrune.Commands
 {
     /// <summary>
-    /// Command to recover the a backup from a given set.
+    /// Command to recover (get a copy of) the a backup from a given set.
     /// </summary>
     public class RecoverCommand : BaseFileProviderCommand<RecoverCommand.Options>
     {
@@ -83,24 +83,17 @@ namespace Comsec.SqlPrune.Commands
             public bool NoConfirm { get; set; }
         }
 
-        #region Dependencies
+        private readonly IFileProvider localFileSystemProvider;
 
         /// <summary>
-        /// Gets or sets the local file system provider.
+        /// Constructor.
         /// </summary>
-        /// <value>
-        /// The local file system provider.
-        /// </value>
-        public IFileProvider LocalFileSystemProvider { get; set; }
-
-        #endregion
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RecoverCommand"/> class.
-        /// </summary>
-        public RecoverCommand()
+        /// <param name="fileProviders"></param>
+        /// <param name="localFileSystemProvider"></param>
+        public RecoverCommand(IEnumerable<IFileProvider> fileProviders, IFileProvider localFileSystemProvider) 
+            : base(fileProviders)
         {
-            LocalFileSystemProvider = new LocalFileSystemProvider();
+            this.localFileSystemProvider = localFileSystemProvider;
         }
 
         /// <summary>
@@ -112,21 +105,21 @@ namespace Comsec.SqlPrune.Commands
         {
             PruneConsole.OutputVersion();
 
-            IFileProvider provider;
+            var provider = GetProvider(options.Path).Result;
 
-            if (!GetProvider(options.Path, out provider))
+            if (provider == null)
             {
-                return (int)ExitCode.GeneralError;
+                return (int) ExitCode.GeneralError;
             }
 
             if (string.IsNullOrEmpty(options.DatabaseName))
             {
-                Console.WriteLine("Missing -db-bname parameter");
+                Console.WriteLine("Missing -db-name parameter");
 
                 return (int)ExitCode.GeneralError;
             }
             
-            Console.Write("Lising all ");
+            Console.Write("Listing all ");
             ColorConsole.Write(ConsoleColor.Cyan, "{0} backups with extensions: {1}", options.DatabaseName, options.FileExtensions);
             Console.Write(" files in ");
             ColorConsole.Write(ConsoleColor.Yellow, options.Path);
@@ -138,8 +131,10 @@ namespace Comsec.SqlPrune.Commands
                                                   .Select(x => x.Replace("*", ""))
                                                   .ToArray();
 
-            var paths = provider.GetFiles(options.Path, options.DatabaseName + "_backup_*")
-                                .Where(x => extensionsSearchPatterns.Any(y => x.Key.EndsWith(y)));
+            var allPaths = provider.GetFiles(options.Path, options.DatabaseName + "_backup_*")
+                                   .Result;
+
+            var paths = allPaths.Where(x => extensionsSearchPatterns.Any(y => x.Key.EndsWith(y)));
 
             foreach (var keyValuePair in paths)
             {
@@ -167,7 +162,7 @@ namespace Comsec.SqlPrune.Commands
                 return (int)ExitCode.GeneralError;
             }
 
-            if (!LocalFileSystemProvider.IsDirectory(options.DestinationPath))
+            if (!localFileSystemProvider.IsDirectory(options.DestinationPath).Result)
             {
                 Console.WriteLine("Destination path is not a local directory");
                 
@@ -197,7 +192,7 @@ namespace Comsec.SqlPrune.Commands
             var destination = Path.Combine(options.DestinationPath, filename);
 
             // Check the file doesn't exist in destination folder
-            var destinationFileSize = LocalFileSystemProvider.GetFileSize(destination);
+            var destinationFileSize = localFileSystemProvider.GetFileSize(destination).Result;
             if (destinationFileSize > -1)
             {
                 if (mostRecentFile.Size == destinationFileSize)

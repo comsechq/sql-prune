@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using Comsec.SqlPrune.Models;
 
-namespace Comsec.SqlPrune.Interfaces.Services
+namespace Comsec.SqlPrune.Services
 {
     /// <summary>
-    /// Interface for the pruning service (business logic that decides wether or not to prune a backup from a set).
+    /// Interface for the pruning service (business logic that decides whether or not to prune a backup from a set).
     /// </summary>
     public interface IPruneService
     {

@@ -33,3 +33,4 @@ building.txt
 *.json
 Source/Packages/*
 Source/.vs/*
+/.vs/

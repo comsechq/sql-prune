@@ -1,28 +1,37 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
+using Comsec.SqlPrune.Providers;
+using LightInject;
 using NUnit.Framework;
 
 namespace Comsec.SqlPrune.Services.Providers
 {
     [TestFixture]
+    [Parallelizable]
     public class S3ProviderTest
     {
-        private S3Provider provider;
-
-        [SetUp]
-        public void Setup()
+        public S3Provider Setup(out MockingServiceContainer context)
         {
-            provider = new S3Provider();
+            context = new MockingServiceContainer();
+
+            context.Register<S3Provider>();
+
+            return context.GetInstance<S3Provider>();
         }
 
         [Test]
         public void TestShouldRun()
         {
+            var provider = Setup(out var context);
+
             Assert.IsTrue(provider.ShouldRun(@"s3://hello-world"));
         }
 
         [Test]
         public void TestShouldNotRun()
         {
+            var provider = Setup(out var context);
+
             Assert.IsFalse(provider.ShouldRun(@"\\network-share\folder"));
             Assert.IsFalse(provider.ShouldRun(@"smb://boo"));
             Assert.IsFalse(provider.ShouldRun(@"e:\\boo"));
@@ -33,6 +42,8 @@ namespace Comsec.SqlPrune.Services.Providers
         [Test]
         public void TestExtractFilenameFromPath()
         {
+            var provider = Setup(out var context);
+
             var result = provider.ExtractFilenameFromPath("s3://bucket/folder/sub/file.ext");
 
             Assert.AreEqual("file.ext", result);
@@ -40,18 +51,22 @@ namespace Comsec.SqlPrune.Services.Providers
 
         [Test]
         [Ignore("Integration test: replace bucket-name with a real bucket")]
-        public void TestIsDirectory()
+        public async Task TestIsDirectory()
         {
-            var result = provider.IsDirectory("s3://a-test-bucket/test");
+            var provider = Setup(out var context);
+
+            var result = await provider.IsDirectory("s3://a-test-bucket/test");
 
             Assert.IsTrue(result);
         }
 
         [Test]
         [Ignore("Integration test")]
-        public void TestIsNotDirectory()
+        public async Task TestIsNotDirectory()
         {
-            var result = provider.IsDirectory("this-bucket-does-not-exist");
+            var provider = Setup(out var context);
+
+            var result = await provider.IsDirectory("this-bucket-does-not-exist");
 
             Assert.IsFalse(result);
         }
@@ -60,6 +75,8 @@ namespace Comsec.SqlPrune.Services.Providers
         [Ignore("Integration test: replace path with a real value")]
         public void TestGetFileSize()
         {
+            var provider = Setup(out var context);
+
             var result = provider.GetFileSize("s3://a-test-bucket/folder/file.ext");
 
             Assert.AreEqual(2849199616, result);
@@ -67,9 +84,11 @@ namespace Comsec.SqlPrune.Services.Providers
 
         [Test]
         [Ignore("Integration test: replace bucket-name with a real bucket")]
-        public void TestGetFiles()
+        public async Task TestGetFiles()
         {
-            var files = provider.GetFiles("s3://a-test-bucket/folder", "*.zip");
+            var provider = Setup(out var context);
+
+            var files = await provider.GetFiles("s3://a-test-bucket/folder", "*.zip");
 
             Assert.Less(0, files.Count);
 
@@ -79,9 +98,11 @@ namespace Comsec.SqlPrune.Services.Providers
 
         [Test]
         [Ignore("Integration test: file name with full path of existing file you're willing to delete")]
-        public void TestDelete()
+        public async Task TestDelete()
         {
-            provider.Delete("s3://a-test-bucket/path/to/folder/filename.ext");
+            var provider = Setup(out var context);
+
+            await provider.Delete("s3://a-test-bucket/path/to/folder/filename.ext");
         }
     }
 }

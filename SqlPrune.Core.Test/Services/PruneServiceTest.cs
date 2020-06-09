@@ -98,7 +98,7 @@ namespace Comsec.SqlPrune.Services
                           new BakModel {Created = new DateTime(2014, 6, 25)}
                       };
 
-            service.KeepDayOccurences(set, DayOfWeek.Sunday, 0);
+            service.KeepDayOccurrences(set, DayOfWeek.Sunday, 0);
             
             Assert.IsFalse(set[0].Prunable.Value);
             Assert.IsTrue(set[1].Prunable.Value);
@@ -121,7 +121,7 @@ namespace Comsec.SqlPrune.Services
                           new BakModel {Created = new DateTime(2014, 6, 29)},
                       };
 
-            service.KeepDayOccurences(set, DayOfWeek.Sunday, 0);
+            service.KeepDayOccurrences(set, DayOfWeek.Sunday, 0);
 
             Assert.IsTrue(set[0].Prunable.Value);
             Assert.IsFalse(set[1].Prunable.Value);
@@ -147,7 +147,7 @@ namespace Comsec.SqlPrune.Services
                           new BakModel {Created = new DateTime(2012, 7, 29)},
                       };
 
-            service.KeepDayOccurences(set, DayOfWeek.Sunday, new[] {0, 2});
+            service.KeepDayOccurrences(set, DayOfWeek.Sunday, new[] {0, 2});
 
             Assert.IsFalse(set[0].Prunable.Value);
             Assert.IsTrue(set[1].Prunable.Value);
@@ -173,7 +173,7 @@ namespace Comsec.SqlPrune.Services
                           // Previously pruned
                       };
 
-            service.KeepDayOccurences(set, DayOfWeek.Sunday, new[] {0, 2});
+            service.KeepDayOccurrences(set, DayOfWeek.Sunday, new[] {0, 2});
 
             Assert.IsFalse(set[0].Prunable.Value);
             Assert.IsFalse(set[1].Prunable.Value);
@@ -200,7 +200,7 @@ namespace Comsec.SqlPrune.Services
                           // Previously pruned
                       };
 
-            service.KeepDayOccurences(set, DayOfWeek.Sunday, new[] {0, 2});
+            service.KeepDayOccurrences(set, DayOfWeek.Sunday, new[] {0, 2});
 
             Assert.IsTrue(set[0].Prunable.Value);
             Assert.IsTrue(set[1].Prunable.Value);
@@ -217,7 +217,7 @@ namespace Comsec.SqlPrune.Services
                                                .Where(x => x.Created <= new DateTime(2013, 5, 1))
                                                .ToArray();
 
-            service.KeepDayOccurences(set, DayOfWeek.Sunday, new[] {0, 2});
+            service.KeepDayOccurrences(set, DayOfWeek.Sunday, new[] {0, 2});
 
             Assert.AreEqual(2, set.Count(x => x.Prunable.HasValue && !x.Prunable.Value));
             Assert.AreEqual(12, set.Count(x => x.Prunable.HasValue && x.Prunable.Value));
@@ -235,7 +235,7 @@ namespace Comsec.SqlPrune.Services
                                                .Where(x => x.Created <= new DateTime(2014, 1, 1))
                                                .ToArray();
 
-            service.KeepDayOccurences(set, DayOfWeek.Sunday, new[] { 0, 2 });
+            service.KeepDayOccurrences(set, DayOfWeek.Sunday, new[] { 0, 2 });
 
             Assert.AreEqual(2, set.Count(x => x.Prunable.HasValue && !x.Prunable.Value));
             Assert.AreEqual(12, set.Count(x => x.Prunable.HasValue && x.Prunable.Value));
@@ -278,7 +278,7 @@ namespace Comsec.SqlPrune.Services
         /// <returns></returns>
         private static string[] ReadAllFileList()
         {
-            var listing = File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, @"..\..\Samples\test-files.txt"));
+            var listing = File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, @"..\..\..\Samples\test-files.txt"));
 
             return Regex.Split(listing, Environment.NewLine);
         }

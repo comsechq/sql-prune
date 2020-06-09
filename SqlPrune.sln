@@ -1,20 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30128.74
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{E4AC4A91-8FAD-45F7-8B6A-A8C13D35D004}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlPrune.Core", "SqlPrune.Core\SqlPrune.Core.csproj", "{FA8934C3-9DF2-426F-A379-A48BC5EE9599}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlPrune.Core.Test", "SqlPrune.Core.Test\SqlPrune.Core.Test.csproj", "{726BFB60-5B4F-49C9-B6A7-157B05E9FA66}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{F7772ED4-7992-44CD-BA8C-DDACFC5B55C1}"
 	ProjectSection(SolutionItems) = preProject
-		..\LICENSE = ..\LICENSE
-		..\README.md = ..\README.md
-		..\unit-test-output-example.png = ..\unit-test-output-example.png
+		code_of_conduct.md = code_of_conduct.md
+		LICENSE.txt = LICENSE.txt
+		README.md = README.md
+		unit-test-output-example.png = unit-test-output-example.png
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlPrune", "SqlPrune\SqlPrune.csproj", "{792992CC-C703-454A-B5E6-9AB7BB9752CA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlPrune.Core", "SqlPrune.Core\SqlPrune.Core.csproj", "{D25C7D61-C511-45C5-B080-7C430B2AD9F0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlPrune.Core.Test", "SqlPrune.Core.Test\SqlPrune.Core.Test.csproj", "{C583F3A8-8A71-4664-B1B4-12411D86197E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlPrune.Cli", "SqlPrune.Cli\SqlPrune.Cli.csproj", "{3AA21F87-3465-4E58-82FB-D4672618159B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,20 +23,23 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{792992CC-C703-454A-B5E6-9AB7BB9752CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{792992CC-C703-454A-B5E6-9AB7BB9752CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{792992CC-C703-454A-B5E6-9AB7BB9752CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{792992CC-C703-454A-B5E6-9AB7BB9752CA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D25C7D61-C511-45C5-B080-7C430B2AD9F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D25C7D61-C511-45C5-B080-7C430B2AD9F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D25C7D61-C511-45C5-B080-7C430B2AD9F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D25C7D61-C511-45C5-B080-7C430B2AD9F0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C583F3A8-8A71-4664-B1B4-12411D86197E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C583F3A8-8A71-4664-B1B4-12411D86197E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C583F3A8-8A71-4664-B1B4-12411D86197E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C583F3A8-8A71-4664-B1B4-12411D86197E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA8934C3-9DF2-426F-A379-A48BC5EE9599}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA8934C3-9DF2-426F-A379-A48BC5EE9599}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA8934C3-9DF2-426F-A379-A48BC5EE9599}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA8934C3-9DF2-426F-A379-A48BC5EE9599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{726BFB60-5B4F-49C9-B6A7-157B05E9FA66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{726BFB60-5B4F-49C9-B6A7-157B05E9FA66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{726BFB60-5B4F-49C9-B6A7-157B05E9FA66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{726BFB60-5B4F-49C9-B6A7-157B05E9FA66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AA21F87-3465-4E58-82FB-D4672618159B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AA21F87-3465-4E58-82FB-D4672618159B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AA21F87-3465-4E58-82FB-D4672618159B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AA21F87-3465-4E58-82FB-D4672618159B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5A7A00AA-BB9B-4198-AAD3-6C872BE9F09A}
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using Comsec.SqlPrune.Providers;
+using NUnit.Framework;
 
 namespace Comsec.SqlPrune.Services.Providers
 {
@@ -25,11 +27,11 @@ namespace Comsec.SqlPrune.Services.Providers
         [Test]
         public void TestShouldNotRun()
         {
-            Assert.IsTrue(provider.ShouldRun(@"\\network-share\folder"));
-            Assert.IsTrue(provider.ShouldRun(@"smb://boo"));
-            Assert.IsTrue(provider.ShouldRun(@"s3://boo"));
-            Assert.IsTrue(provider.ShouldRun(@"ftp://boo"));
-            Assert.IsTrue(provider.ShouldRun(@"http://boo"));
+            Assert.IsFalse(provider.ShouldRun(@"\\network-share\folder"));
+            Assert.IsFalse(provider.ShouldRun(@"smb://boo"));
+            Assert.IsFalse(provider.ShouldRun(@"s3://boo"));
+            Assert.IsFalse(provider.ShouldRun(@"ftp://boo"));
+            Assert.IsFalse(provider.ShouldRun(@"http://boo"));
         }
 
         [Test]
@@ -41,9 +43,9 @@ namespace Comsec.SqlPrune.Services.Providers
         }
 
         [Test]
-        public void TestGetFileSizeWhenFileDoesNotExist()
+        public async Task TestGetFileSizeWhenFileDoesNotExist()
         {
-            var result = provider.GetFileSize(@"C:\this\folder\should\not\exists\and\this\file.either");
+            var result = await provider.GetFileSize(@"C:\this\folder\should\not\exists\and\this\file.either");
 
             Assert.AreEqual(-1, result);
         }

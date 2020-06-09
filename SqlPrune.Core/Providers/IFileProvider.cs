@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Comsec.SqlPrune.Interfaces.Services.Providers
+namespace Comsec.SqlPrune.Providers
 {
     /// <summary>
     /// Interface to wrap call to a local or remote file system.
@@ -9,7 +9,7 @@ namespace Comsec.SqlPrune.Interfaces.Services.Providers
     public interface IFileProvider
     {
         /// <summary>
-        /// Method called by the command to determine which <see cref="IFileProvider"/> implemetation should run.
+        /// Method called by the command to determine which <see cref="IFileProvider"/> implementation should run.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
@@ -27,14 +27,14 @@ namespace Comsec.SqlPrune.Interfaces.Services.Providers
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
-        bool IsDirectory(string path);
+        Task<bool> IsDirectory(string path);
 
         /// <summary>
         /// Gets the size of the file.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <returns>-1 if the file doesn't exist otherwhise the number of bytes</returns>
-        long GetFileSize(string path);
+        /// <returns>-1 if the file doesn't exist otherwise the number of bytes</returns>
+        Task<long> GetFileSize(string path);
 
         /// <summary>
         /// Returns the names of files (including their paths) that match the specified search pattern in the specified directory.
@@ -47,13 +47,13 @@ namespace Comsec.SqlPrune.Interfaces.Services.Providers
         /// <remarks>
         /// System Files and Folders will be ignored
         /// </remarks>
-        IDictionary<string, long> GetFiles(string dirPath, params string[] searchPattern);
+        Task<IDictionary<string, long>> GetFiles(string dirPath, params string[] searchPattern);
 
         /// <summary>
         /// Deletes the specified file.
         /// </summary>
         /// <param name="path">The path.</param>
-        void Delete(string path);
+        Task Delete(string path);
 
         /// <summary>
         /// Copies the file at the given <see cref="path"/> and to a specified specified local <see cref="destinationPath"/> asynchronously.

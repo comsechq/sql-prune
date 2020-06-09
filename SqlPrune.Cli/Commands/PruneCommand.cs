@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Comsec.SqlPrune.Interfaces.Services;
-using Comsec.SqlPrune.Interfaces.Services.Providers;
+using Comsec.SqlPrune.Providers;
 using Comsec.SqlPrune.Services;
 using Sugar.Command;
+using Sugar.Command.Binder;
 using Sugar.Extensions;
 
 namespace Comsec.SqlPrune.Commands
@@ -41,7 +42,7 @@ namespace Comsec.SqlPrune.Commands
             /// <value>
             /// The file extensions.
             /// </value>
-            [Parameter("file-extensions", Default = "*.bak")]
+            [Parameter("file-extensions", Default = "*.bak,*.bak.7z,*.sql,*.sql.gz")]
             public string FileExtensions { get; set; }
 
             /// <summary>
@@ -54,24 +55,17 @@ namespace Comsec.SqlPrune.Commands
             public bool NoConfirm { get; set; }
         }
 
-        #region Dependencies
+        private readonly IPruneService pruneService;
 
         /// <summary>
-        /// Gets or sets the prune service.
+        /// Constructor.
         /// </summary>
-        /// <value>
-        /// The prune service.
-        /// </value>
-        public IPruneService PruneService { get; set; }
-
-        #endregion
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PruneCommand" /> class.
-        /// </summary>
-        public PruneCommand()
+        /// <param name="fileProviders"></param>
+        /// <param name="pruneService"></param>
+        public PruneCommand(IEnumerable<IFileProvider> fileProviders, IPruneService pruneService) 
+            : base(fileProviders)
         {
-            PruneService = new PruneService();
+            this.pruneService = pruneService;
         }
 
         /// <summary>
@@ -82,14 +76,14 @@ namespace Comsec.SqlPrune.Commands
         {
             PruneConsole.OutputVersion();
 
-            IFileProvider provider;
+            var provider = GetProvider(options.Path).Result;
 
-            if (!GetProvider(options.Path, out provider))
+            if (provider == null)
             {
-                return (int)ExitCode.GeneralError;
+                return (int) ExitCode.GeneralError;
             }
             
-            Console.Write("Lising all ");
+            Console.Write("Listing all ");
             ColorConsole.Write(ConsoleColor.Cyan, options.FileExtensions);
             Console.Write(" files in ");
             ColorConsole.Write(ConsoleColor.Yellow, options.Path);
@@ -98,9 +92,11 @@ namespace Comsec.SqlPrune.Commands
 
             var endingWith = options.FileExtensions
                                     .FromCsv()
+                                    .Select(x => x.Trim())
                                     .ToArray();
 
-            var paths = provider.GetFiles(options.Path, endingWith);
+            var paths = provider.GetFiles(options.Path, endingWith)
+                                .Result;
 
             if (paths == null)
             {
@@ -140,17 +136,17 @@ namespace Comsec.SqlPrune.Commands
             long totalKept = 0;
             long totalPruned = 0;
 
-            foreach (var databaseBakupSet in backupSets)
+            foreach (var dbBackupSet in backupSets)
             {
-                PruneService.FlagPrunableBackupsInSet(databaseBakupSet);
+                pruneService.FlagPrunableBackupsInSet(dbBackupSet);
 
-                ColorConsole.Write(ConsoleColor.White, " {0}:", databaseBakupSet.Key);
+                ColorConsole.Write(ConsoleColor.White, " {0}:", dbBackupSet.Key);
                 Console.WriteLine();
                 
                 ColorConsole.Write(ConsoleColor.DarkGray, " Created         Status\tBytes\t\tPath");
                 Console.WriteLine();
 
-                foreach (var model in databaseBakupSet)
+                foreach (var model in dbBackupSet)
                 {
                     Console.Write(" {0} ", model.Created.ToString("yyyyMMddTHHmmss", CultureInfo.InvariantCulture));
 

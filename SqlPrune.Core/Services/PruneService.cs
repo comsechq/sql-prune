@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Comsec.SqlPrune.Interfaces.Services;
 using Comsec.SqlPrune.Models;
 
 namespace Comsec.SqlPrune.Services
 {
     /// <summary>
-    /// Service to hold business logic that decides wether or not to prune a backup from a set.
+    /// Service to hold business logic that decides whether or not to prune a backup from a set.
     /// </summary>
     public class PruneService : IPruneService
     {
@@ -57,9 +56,9 @@ namespace Comsec.SqlPrune.Services
         /// <param name="set">The set.</param>
         /// <param name="dayOfWeekToKeep">The day of week to keep.</param>
         /// <param name="weekNumberToKeepFromFirstOccurence">The occurence to keep (e.g. 0 to keep the first match).</param>
-        public void KeepDayOccurences(IEnumerable<BakModel> set, DayOfWeek dayOfWeekToKeep, int weekNumberToKeepFromFirstOccurence)
+        public void KeepDayOccurrences(IEnumerable<BakModel> set, DayOfWeek dayOfWeekToKeep, int weekNumberToKeepFromFirstOccurence)
         {
-            KeepDayOccurences(set, dayOfWeekToKeep, new[] {weekNumberToKeepFromFirstOccurence});
+            KeepDayOccurrences(set, dayOfWeekToKeep, new[] {weekNumberToKeepFromFirstOccurence});
         }
 
         /// <summary>
@@ -67,11 +66,11 @@ namespace Comsec.SqlPrune.Services
         /// </summary>
         /// <param name="set">The set.</param>
         /// <param name="dayOfWeekToKeep">The day of week to keep (e.g. Sunday).</param>
-        /// <param name="weekNumberToKeepFromFirstOccurence">The occurences to keep (e.g. for 1st and 3nd week: "new []{ 0, 2}").</param>
+        /// <param name="weekNumberToKeepFromFirstOccurence">The occurrences to keep (e.g. for 1st and 3nd week: "new []{ 0, 2}").</param>
         /// <remarks>
         /// If you want to keep the first and third occurence (e.g. new []{0, 2}) but there are less matches, the best 'match' will be 
         /// </remarks>
-        public void KeepDayOccurences(IEnumerable<BakModel> set, DayOfWeek dayOfWeekToKeep, int[] weekNumberToKeepFromFirstOccurence)
+        public void KeepDayOccurrences(IEnumerable<BakModel> set, DayOfWeek dayOfWeekToKeep, int[] weekNumberToKeepFromFirstOccurence)
         {
             var processableBackupsInSet = new List<BakModel>();
 
@@ -132,7 +131,7 @@ namespace Comsec.SqlPrune.Services
             else
             {
                 // We'll remove values in this list as we find matches (so that we don't matches more than once)
-                var occurencesToMatch = weekNumberToKeepFromFirstOccurence.ToList();
+                var occurrencesToMatch = weekNumberToKeepFromFirstOccurence.ToList();
 
                 DateTime? firstMatchCreationDate = null;
 
@@ -153,22 +152,22 @@ namespace Comsec.SqlPrune.Services
                             firstMatchCreationDate = bak.Created;
                         }
 
-                        // Got that far an ran out of occurences to match: I haz can prune
-                        if (occurencesToMatch.Count == 0)
+                        // Got that far an ran out of occurrences to match: I haz can prune
+                        if (occurrencesToMatch.Count == 0)
                         {
                             bak.Prunable = true;
                         }
 
-                        for (var i = occurencesToMatch.Count - 1; i >= 0; i--)
+                        for (var i = occurrencesToMatch.Count - 1; i >= 0; i--)
                         {
-                            var occurence = occurencesToMatch[i];
+                            var occurence = occurrencesToMatch[i];
 
                             // Match on an occurence equal or above what is wanted
                             bak.Prunable = !(numberOfWeeksSinceLastMatch >= occurence);
 
                             if (!bak.Prunable.Value)
                             {
-                                occurencesToMatch.RemoveAt(i);
+                                occurrencesToMatch.RemoveAt(i);
                                 break;
                             }
                         }
@@ -269,7 +268,7 @@ namespace Comsec.SqlPrune.Services
             {
                 if (week.Count() > 1)
                 {
-                    KeepDayOccurences(week, DayOfWeek.Sunday, 0);
+                    KeepDayOccurrences(week, DayOfWeek.Sunday, 0);
                 }
                 else
                 {
@@ -283,7 +282,7 @@ namespace Comsec.SqlPrune.Services
             {
                 if (month.Count() > 1)
                 {
-                    KeepDayOccurences(month, DayOfWeek.Sunday, new[] {0, 2});
+                    KeepDayOccurrences(month, DayOfWeek.Sunday, new[] {0, 2});
                 }
                 else
                 {
@@ -298,7 +297,7 @@ namespace Comsec.SqlPrune.Services
                 if (year.Count() > 1)
                 {
                     // Order year set ascending
-                    KeepDayOccurences(year, DayOfWeek.Sunday, 0);
+                    KeepDayOccurrences(year, DayOfWeek.Sunday, 0);
                 }
                 else
                 {
