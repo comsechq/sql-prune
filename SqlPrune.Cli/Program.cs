@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.IO;
+using System.CommandLine.Parsing;
+using System.IO;
+using System.Linq;
 using Comsec.SqlPrune.Commands;
 using Comsec.SqlPrune.LightInject;
-using Comsec.SqlPrune.Providers;
-using Comsec.SqlPrune.Services;
 using LightInject;
-using Sugar.Command.Binder;
 
 namespace Comsec.SqlPrune
 {
@@ -14,37 +16,31 @@ namespace Comsec.SqlPrune
     /// </summary>
     public class Program
     {
-        public static ServiceContainer Container;
-
-        static void InstallIoc(Parameters parameters)
+        static int Main(string[] args)
         {
             var options = new ContainerOptions
                           {
                               EnablePropertyInjection = false
                           };
 
-            Container = new ServiceContainer(options);
+            var container = new ServiceContainer(options);
 
-            Container.RegisterInstance(parameters);
+            container.RegisterFrom<SqlPruneCoreCompositionRoot>();
 
-            Container.RegisterFrom<AwsSdkCompositionRoot>();
-            Container.RegisterFrom<SqlPruneCoreCompositionRoot>();
+            var rootCommand = new RootCommand
+                              {
+                                  Description = "Command line utility to prune (and recover) SQL backups in a folder (or S3 bucket)"
+                              };
 
-            Container.Register<PruneCommand>();
-            Container.Register<RecoverCommand>(f =>
-                new RecoverCommand(f.GetInstance<IEnumerable<IFileProvider>>(), f.GetInstance<IFileProvider>("local")));
-        }
+            PruneCommand.Configure(rootCommand, container);
+            RecoverCommand.Configure(rootCommand, container);
 
-        static int Main(string[] args)
-        {
-            // string[] args does contain as much as Environment.CommandLine
-            var parameters = new Parameters(Environment.CommandLine);
+            var builder = new CommandLineBuilder(rootCommand);
 
-            InstallIoc(parameters);
+            builder.UseDefaults();
+            builder.Build();
 
-            var console = new PruneConsole();
-            
-            return console.Run(parameters);
+            return rootCommand.InvokeAsync(args).Result;
         }
     }
 }

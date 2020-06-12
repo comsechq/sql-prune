@@ -4,16 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Providers;
-using Sugar.Command;
 
 namespace Comsec.SqlPrune.Commands
 {
     /// <summary>
-    /// Base class for commands that depending on file providers.
+    /// Base class for commands depending on file providers.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <seealso cref="Sugar.Command.BoundCommand{T}" />
-    public abstract class BaseFileProviderCommand<T> : BoundCommand<T> where T : class, new()
+    public abstract class BaseFileProviderCommand
     {
         private readonly IEnumerable<IFileProvider> fileProviders;
 
@@ -37,8 +34,8 @@ namespace Comsec.SqlPrune.Commands
 
             if (provider == null)
             {
-                Console.WriteLine("Unrecognised path. You must provide a path to a local folder or to an Amazon S3 bucket.");
-                Console.WriteLine(@"Example: x:\path\to\folder or s3://bucket-name/optionally/with/path/folder");
+                throw new ApplicationException(@"Unrecognised path. You must provide a path to a local folder (or an Amazon S3 bucket).
+Example: ""x:\path\to\folder"" or ""s3://bucket-name/optionally/with/path/folder""");
             }
             else
             {
@@ -46,12 +43,16 @@ namespace Comsec.SqlPrune.Commands
 
                 if (string.IsNullOrEmpty(path) || path.StartsWith("-") || !isDirectory)
                 {
-                    Console.WriteLine("Invalid path: You must provide a path to an existing local folder or drive.");
-
-                    provider = null;
+                    throw new ApplicationException(
+                        $"Invalid path: \"{path}\". You must provide a path to an existing folder");
                 }
             }
             
+            if (provider == null)
+            {
+                throw new ApplicationException("Could not determine file provider");
+            }
+
             return provider;
         }
 

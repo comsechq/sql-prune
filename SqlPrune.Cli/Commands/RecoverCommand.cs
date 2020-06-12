@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
+using Comsec.SqlPrune.LightInject;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Providers;
-using Sugar.Command;
-using Sugar.Command.Binder;
+using LightInject;
 using Sugar.Extensions;
 
 namespace Comsec.SqlPrune.Commands
@@ -14,75 +16,8 @@ namespace Comsec.SqlPrune.Commands
     /// <summary>
     /// Command to recover (get a copy of) the a backup from a given set.
     /// </summary>
-    public class RecoverCommand : BaseFileProviderCommand<RecoverCommand.Options>
+    public class RecoverCommand : BaseFileProviderCommand
     {
-        [Flag("recover")]
-        public class Options
-        {
-            /// <summary>
-            /// Gets or sets the path (e.g. "e:", "c:\backups" or "s3://bucket/folder").
-            /// </summary>
-            /// <value>
-            /// The path.
-            /// </value>
-            [Parameter(0, Required = true)]
-            public string Path { get; set; }
-
-            /// <summary>
-            /// Gets or sets the name of the database.
-            /// </summary>
-            /// <value>
-            /// The name of the database.
-            /// </value>
-            [Parameter("db-name", Default = null)]
-            public string DatabaseName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the local destination path to the folder where to copy the file to (e.g. D:\folder).
-            /// </summary>
-            /// <value>
-            /// The destination path.
-            /// </value>
-            [Parameter("dest", Default = null)]
-            public string DestinationPath { get; set; }
-
-            /// <summary>
-            /// Gets or sets the date and time (e.g. "2014-02-28 00:01:02") to restrict to.
-            /// </summary>
-            /// <value>
-            /// The date and time of the backup.
-            /// </value>
-            [Parameter("date-time", Default = "")]
-            public DateTime? DateTime { get; set; }
-
-            /// <summary>
-            /// Gets or sets the date component only to restrict to (e.g. "2014-02-28").
-            /// </summary>
-            /// <value>
-            /// The day to restore the backup from.
-            /// </value>
-            [Parameter("date", Default = "")]
-            public DateTime? Date { get; set; }
-
-            /// <summary>
-            /// Gets or sets the file extensions (values can be comma separated).
-            /// </summary>
-            /// <value>
-            /// The file extensions.
-            /// </value>
-            [Parameter("file-extensions", Default = "*.bak")]
-            public string FileExtensions { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether the user will have to [confirm] before any file is deleted.
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if [no confirm]; otherwise, <c>false</c>.
-            /// </value>
-            [Flag("no-confirm")]
-            public bool NoConfirm { get; set; }
-        }
-
         private readonly IFileProvider localFileSystemProvider;
 
         /// <summary>
@@ -97,55 +32,115 @@ namespace Comsec.SqlPrune.Commands
         }
 
         /// <summary>
-        /// Executes the specified options.
+        /// Defines a sub command, its handler and adds it to the <see cref="parent"/> command.
         /// </summary>
-        /// <param name="options">The options.</param>
-        /// <returns></returns>
-        public override int Execute(Options options)
+        /// <param name="parent"></param>
+        /// <param name="container"></param>
+        public static void Configure(Command parent, ServiceContainer container)
         {
-            PruneConsole.OutputVersion();
+            var command = new Command("recover")
+                          {
+                              new Argument<string>("path",
+                                  "The path to a local folder or S3 bucket name"),
+                              new Option<string>(new[] {"--ext"},
+                                  getDefaultValue: () => "*.bak,*.bak.7z,*.sql,*.sql.gz",
+                                  description:
+                                  "Overrides the default file extensions (coma separated values can be used)"),
+                              new Option<string>("--dbName",
+                                  description: "Name of the database to recover")
+                              {Required = true},
+                              new Option<DirectoryInfo>("--dest",
+                                  description: "Folder where to recover the backup file to")
+                              {Required = true},
+                              new Option<string>("--date",
+                                  getDefaultValue: () => "",
+                                  description:
+                                  "The date (and optionally the time) of the backup (e.g. \"2020-06-09 00:01:02\") to restrict to. If only the date is specified the most recent backup for that day will be recovered."),
+                              new Option<bool>(new[] {"--yes", "-y"},
+                                  getDefaultValue: () => false,
+                                  description: "Recover without confirmation")
+                              {Required = false}
+                          }.AddAwsSdkCredentialsOptions();
 
-            var provider = GetProvider(options.Path).Result;
+            command.Handler =
+                CommandHandler.Create<Input, string, string, string>(async (input, profile, profilesLocation, region) =>
+                {
+                    container.RegisterOptionalAwsCredentials(profile, profilesLocation)
+                             .RegisterOptionalAwsRegion(region);
 
-            if (provider == null)
+                    container.Register<RecoverCommand>(f =>
+                        new RecoverCommand(f.GetInstance<IEnumerable<IFileProvider>>(),
+                            f.GetInstance<IFileProvider>("local")));
+
+                    var instance = container.GetInstance<RecoverCommand>();
+
+                    await instance.Execute(input);
+                });
+
+            parent.Add(command);
+        }
+
+        public class Input
+        {
+            public Input(string path, string ext, string dbName, DirectoryInfo dest, string date, bool yes)
             {
-                return (int) ExitCode.GeneralError;
+                Path = path;
+                FileExtensions = ext;
+                DatabaseName = dbName;
+                DestinationPath = dest;
+                
+                if (string.IsNullOrEmpty(date))
+                {
+                    Date = null;
+                }
+                else
+                {
+                    Date = DateTime.Parse(date);
+                }
+
+                NoConfirm = yes;
+                
             }
 
-            if (string.IsNullOrEmpty(options.DatabaseName))
-            {
-                Console.WriteLine("Missing -db-name parameter");
+            public string Path { get; set; }
 
-                return (int)ExitCode.GeneralError;
-            }
+            public string FileExtensions { get; set; }
+
+            public string DatabaseName { get; set; }
             
+            public DirectoryInfo DestinationPath { get; set; }
+
+            public DateTime? Date { get; set; }
+
+            public bool NoConfirm { get; set; }
+        }
+
+        public async Task Execute(Input input)
+        {
+            var provider = await GetProvider(input.Path);
+
             Console.Write("Listing all ");
-            ColorConsole.Write(ConsoleColor.Cyan, "{0} backups with extensions: {1}", options.DatabaseName, options.FileExtensions);
+            ColorConsole.Write(ConsoleColor.Cyan, "{0} backups with extensions: {1}", input.DatabaseName, input.FileExtensions);
             Console.Write(" files in ");
-            ColorConsole.Write(ConsoleColor.Yellow, options.Path);
+            ColorConsole.Write(ConsoleColor.Yellow, input.Path);
             Console.WriteLine(" including subfolders...");
             Console.WriteLine();
 
-            var extensionsSearchPatterns = options.FileExtensions
-                                                  .FromCsv()
-                                                  .Select(x => x.Replace("*", ""))
-                                                  .ToArray();
+            var extensionsSearchPatterns = input.FileExtensions
+                                                .FromCsv()
+                                                .Select(x => x.Replace("*", ""))
+                                                .ToArray();
 
-            var allPaths = provider.GetFiles(options.Path, options.DatabaseName + "_backup_*")
-                                   .Result;
+            var allPathsTask = provider.GetFiles(input.Path, input.DatabaseName + "_backup_*")
+                                       .GetAwaiter();
+
+            var allPaths = allPathsTask.OutputProgress();
 
             var paths = allPaths.Where(x => extensionsSearchPatterns.Any(y => x.Key.EndsWith(y)));
 
             foreach (var keyValuePair in paths)
             {
                 Console.WriteLine("{0}\t{1}", keyValuePair.Key, keyValuePair.Value);
-            }
-
-            if (string.IsNullOrEmpty(options.DestinationPath))
-            {
-                Console.WriteLine("Missing -dest parameter");
-
-                return (int) ExitCode.GeneralError;
             }
 
             IEnumerable<BakModel> files = ToBakModels(paths);
@@ -157,25 +152,26 @@ namespace Comsec.SqlPrune.Commands
 
             if (groups.Count() > 1)
             {
-                Console.WriteLine("More than one database in the backup set, please extend the -db-name parameter");
-
-                return (int)ExitCode.GeneralError;
+                throw new ApplicationException(
+                    "More than one database in the backup set, please \"lengthen\" the -db-name parameter");
             }
 
-            if (!localFileSystemProvider.IsDirectory(options.DestinationPath).Result)
+            if (!await localFileSystemProvider.IsDirectory(input.DestinationPath.FullName))
             {
-                Console.WriteLine("Destination path is not a local directory");
-                
-                return (int)ExitCode.GeneralError;
+                throw new ApplicationException("Destination path is not a local directory");
             }
 
-            if (options.DateTime.HasValue)
+            if (input.Date.HasValue)
             {
-                files = files.Where(x => x.Created == options.DateTime.Value);
-            }
-            else if (options.Date.HasValue)
-            {
-                files = files.Where(x => x.Created.Date == options.Date.Value.Date);
+                if (input.Date.Value.Hour == 0 && input.Date.Value.Minute == 0 &&
+                    input.Date.Value.Second == 0)
+                {
+                    files = files.Where(x => x.Created.Date == input.Date.Value.Date);
+                }
+                else
+                {
+                    files = files.Where(x => x.Created == input.Date.Value);
+                }
             }
 
             var mostRecentFile = files.OrderByDescending(x => x.Created)
@@ -183,13 +179,11 @@ namespace Comsec.SqlPrune.Commands
 
             if (mostRecentFile == null)
             {
-                Console.WriteLine("Nothing to recover.");
-
-                return (int)ExitCode.GeneralError;
+                throw new ApplicationException("Nothing to recover.");
             }
 
             var filename = provider.ExtractFilenameFromPath(mostRecentFile.Path);
-            var destination = Path.Combine(options.DestinationPath, filename);
+            var destination = Path.Combine(input.DestinationPath.FullName, filename);
 
             // Check the file doesn't exist in destination folder
             var destinationFileSize = localFileSystemProvider.GetFileSize(destination).Result;
@@ -198,8 +192,8 @@ namespace Comsec.SqlPrune.Commands
                 if (mostRecentFile.Size == destinationFileSize)
                 {
                     Console.WriteLine("{0} already exists.", destination);
-                    
-                    return Success();
+
+                    return;
                 }
                 
                 Console.WriteLine("{0} already exist but is not the same size and will be overwritten.", destination);
@@ -207,13 +201,13 @@ namespace Comsec.SqlPrune.Commands
 
             var copy = true;
 
-            if (options.NoConfirm)
+            if (input.NoConfirm)
             {
-                Console.WriteLine("Copying {0} to {1}", mostRecentFile.Path, options.DestinationPath);
+                Console.WriteLine("Copying {0} to {1}", mostRecentFile.Path, input.DestinationPath.FullName);
             }
             else
             {
-                var prompt = $"Copy {mostRecentFile.Path} to {options.DestinationPath}?";
+                var prompt = $"Copy {mostRecentFile.Path} to {input.DestinationPath.FullName}?";
 
                 copy = Confirm.Prompt(prompt, "y");
             }
@@ -223,26 +217,10 @@ namespace Comsec.SqlPrune.Commands
                 var task = provider.CopyToLocalAsync(mostRecentFile.Path, destination)
                                    .GetAwaiter();
 
-                var i = 0;
-
-                do
-                {
-                    i++;
-                    Console.Write(".");
-                    if (i%10 == 0)
-                    {
-                        Console.WriteLine();
-                    }
-                    if (i > 1)
-                    {
-                        Thread.Sleep(1000);
-                    }
-                } while (!task.IsCompleted);
+                task.OutputProgress();
 
                 Console.WriteLine("OK");
             }
-            
-            return Success();
         }
     }
 }

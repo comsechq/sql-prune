@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Comsec.SqlPrune.Factories;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Providers;
@@ -52,13 +53,14 @@ namespace Comsec.SqlPrune.Commands
             provider2.Setup(call => call.ShouldRun(null))
                      .Returns(false);
 
-            var result = command.Execute(new PruneCommand.Options());
+            Assert.ThrowsAsync<ApplicationException>(
+                async () => await command.Execute(new PruneCommand.Input(null, null, false, false)),
+                @"Unrecognised path. You must provide a path to a local folder (or an Amazon S3 bucket).
+Example: ""x:\path\to\folder"" or ""s3://bucket-name/optionally/with/path/folder""");
 
             provider1.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
-            
-            provider2.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
 
-            Assert.AreEqual(-1, result);
+            provider2.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
         }
 
         [Test]
@@ -72,15 +74,15 @@ namespace Comsec.SqlPrune.Commands
             provider1.Setup(call => call.IsDirectory(@"c:\sql-backups\backup.bak"))
                      .ReturnsAsync(false);
 
-            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups\backup.bak"});
-
+            Assert.ThrowsAsync<ApplicationException>(
+                async () => await command.Execute(new PruneCommand.Input(@"c:\sql-backups\backup.bak", null, false, false)),
+                @"Invalid path: ""c:\sql-backups\backup.bak"". You must provide a path to an existing folder");
+            
             provider2.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
-
-            Assert.AreEqual(-1, result);
         }
 
         [Test]
-        public void TestExecuteWhenPathIsDirectoryButSimulationOnly()
+        public async Task TestExecuteWhenPathIsDirectoryButSimulationOnly()
         {
             var command = Setup(out var context, out var provider1, out var provider2);
 
@@ -95,7 +97,7 @@ namespace Comsec.SqlPrune.Commands
             provider1.Setup(call => call.GetFiles(@"c:\sql-backups", "*.bak"))
                      .ReturnsAsync(files);
             
-            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups", FileExtensions = "*.bak"});
+            await command.Execute(new PruneCommand.Input(@"c:\sql-backups", "*.bak", false, false));
 
             provider2.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
 
@@ -104,12 +106,10 @@ namespace Comsec.SqlPrune.Commands
                        Times.Once());
 
             provider1.Verify(call => call.Delete(It.IsAny<string>()), Times.Never());
-            
-            Assert.AreEqual(0, result);
         }
 
         [Test]
-        public void TestExecuteWhenPathIsDirectoryAndDeleteWithoutConfirmation()
+        public async Task TestExecuteWhenPathIsDirectoryAndDeleteWithoutConfirmation()
         {
             var command = Setup(out var context, out var provider1, out var provider2);
 
@@ -128,15 +128,13 @@ namespace Comsec.SqlPrune.Commands
                 .Setup(call => call.FlagPrunableBackupsInSet(It.IsAny<IEnumerable<BakModel>>()))
                 .Callback<IEnumerable<BakModel>>((x) => x.First().Prunable = true);
 
-            var result = command.Execute(new PruneCommand.Options {Path = @"c:\sql-backups", Delete = true, FileExtensions = "*.bak", NoConfirm = true});
+            await command.Execute(new PruneCommand.Input(@"c:\sql-backups", "*.bak", true, true));
 
             provider2.Verify(call => call.IsDirectory(It.IsAny<string>()), Times.Never());
 
             provider1.Verify(call => call.Delete(It.IsAny<string>()), Times.Once());
 
             provider1.Verify(call => call.Delete(files.Keys.First()), Times.Once());
-
-            Assert.AreEqual(0, result);
         }
     }
 }

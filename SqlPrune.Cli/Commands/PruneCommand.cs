@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
+using Comsec.SqlPrune.LightInject;
+using LightInject;
 using Comsec.SqlPrune.Providers;
 using Comsec.SqlPrune.Services;
-using Sugar.Command;
-using Sugar.Command.Binder;
 using Sugar.Extensions;
 
 namespace Comsec.SqlPrune.Commands
@@ -13,48 +16,8 @@ namespace Comsec.SqlPrune.Commands
     /// <summary>
     /// Prunes a given location from its .bak files.
     /// </summary>
-    public class PruneCommand : BaseFileProviderCommand<PruneCommand.Options>
+    public class PruneCommand : BaseFileProviderCommand
     {
-        [Flag("prune")]
-        public class Options
-        {
-            /// <summary>
-            /// Gets or sets the path (e.g. "e:" or "c:\backups").
-            /// </summary>
-            /// <value>
-            /// The path.
-            /// </value>
-            [Parameter(0, Required = true)]
-            public string Path { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether to delete files or just run a simulation.
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if delete; otherwise, <c>false</c>.
-            /// </value>
-            [Flag("delete")]
-            public bool Delete { get; set; }
-
-            /// <summary>
-            /// Gets or sets the file extensions (values can be comma separated).
-            /// </summary>
-            /// <value>
-            /// The file extensions.
-            /// </value>
-            [Parameter("file-extensions", Default = "*.bak,*.bak.7z,*.sql,*.sql.gz")]
-            public string FileExtensions { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether the user will have to [confirm] before any file is deleted.
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if [no confirm]; otherwise, <c>false</c>.
-            /// </value>
-            [Flag("no-confirm")]
-            public bool NoConfirm { get; set; }
-        }
-
         private readonly IPruneService pruneService;
 
         /// <summary>
@@ -69,50 +32,96 @@ namespace Comsec.SqlPrune.Commands
         }
 
         /// <summary>
-        /// Executes the command and restores the given directory onto the SQL server
+        /// Defines a sub command, its handler and adds it to the <see cref="parent"/> command.
         /// </summary>
-        /// <param name="options">The options.</param>
-        public override int Execute(Options options)
+        /// <param name="parent"></param>
+        /// <param name="container"></param>
+        public static void Configure(Command parent, ServiceContainer container)
         {
-            PruneConsole.OutputVersion();
+            var command = new Command("prune")
+                          {
+                              new Argument<string>("path",
+                                  description: "The path to a local folder or S3 bucket name"),
+                              new Option<string>(new[] {"--ext", "-ext"},
+                                  getDefaultValue: () => "*.bak,*.bak.7z,*.sql,*.sql.gz",
+                                  description: "Overrides the default file extensions (coma separated values can be used)"),
+                              new Option<bool>(new[] {"--delete", "-d"},
+                                  getDefaultValue: () => false,
+                                  description: "When specified files will be deleted") {Required = false},
+                              new Option<bool>(new[] {"--yes", "-y"},
+                                  getDefaultValue: () => false,
+                                  description: "Deletes files without confirmation") {Required = false}
+                          }.AddAwsSdkCredentialsOptions();
 
-            var provider = GetProvider(options.Path).Result;
+            command.Handler = CommandHandler.Create<Input, string, string, string>(
+                async (input, profile, profilesLocation, region) =>
+                {
+                    container.RegisterOptionalAwsCredentials(profile, profilesLocation)
+                             .RegisterOptionalAwsRegion(region);
 
-            if (provider == null)
+                    container.Register<PruneCommand>();
+
+                    var instance = container.GetInstance<PruneCommand>();
+
+                    await instance.Execute(input);
+                });
+
+            parent.Add(command);
+        }
+
+        public class Input
+        {
+            public Input(string path, string ext, bool delete, bool yes)
             {
-                return (int) ExitCode.GeneralError;
+                Path = path;
+                FileExtensions = ext;
+                DeleteFiles = delete;
+                NoConfirm = yes;
             }
-            
+
+            public string Path { get; set; }
+
+            public string FileExtensions { get; set; }
+
+            public bool DeleteFiles { get; set; }
+
+            public bool NoConfirm { get; set; }
+        }
+
+        public async Task Execute(Input input)
+        {
+            var provider = await GetProvider(input.Path);
+
             Console.Write("Listing all ");
-            ColorConsole.Write(ConsoleColor.Cyan, options.FileExtensions);
+            ColorConsole.Write(ConsoleColor.Cyan, input.FileExtensions);
             Console.Write(" files in ");
-            ColorConsole.Write(ConsoleColor.Yellow, options.Path);
+            ColorConsole.Write(ConsoleColor.Yellow, input.Path);
             Console.WriteLine(" including subfolders...");
             Console.WriteLine();
 
-            var endingWith = options.FileExtensions
-                                    .FromCsv()
-                                    .Select(x => x.Trim())
-                                    .ToArray();
+            var endingWith = input.FileExtensions
+                                  .FromCsv()
+                                  .Select(x => x.Trim())
+                                  .ToArray();
 
-            var paths = provider.GetFiles(options.Path, endingWith)
-                                .Result;
+            var getFilesTask = provider.GetFiles(input.Path, endingWith)
+                                       .GetAwaiter();
+
+            var paths = getFilesTask.OutputProgress();
 
             if (paths == null)
             {
-                Console.WriteLine("No bak files found in folder or subfolders.");
-
-                return (int) ExitCode.GeneralError;
+                throw new ApplicationException("No bak files found in folder or subfolders.");
             }
 
             var files = ToBakModels(paths);
 
-            Console.WriteLine("Found {0} file(s) out of which {1} have valid file names.", paths.Count, files.Count);
+            Console.WriteLine("Found {0} file(s) out of which {1} have valid file names.", paths.Count(), files.Count);
             Console.WriteLine();
 
-            if (options.Delete)
+            if (input.DeleteFiles)
             {
-                if (options.NoConfirm)
+                if (input.NoConfirm)
                 {
                     ColorConsole.Write(ConsoleColor.Red, "DEFCON 1: ");
                     Console.WriteLine("All prunable files will be deleted.");
@@ -166,15 +175,15 @@ namespace Comsec.SqlPrune.Commands
 
                     Console.Write(model.Path);
                     
-                    if (model.Prunable.HasValue && model.Prunable.Value && options.Delete)
+                    if (model.Prunable.HasValue && model.Prunable.Value && input.DeleteFiles)
                     {
                         var prompt = $"{Environment.NewLine}Delete {model.Path}?";
 
-                        var delete = options.NoConfirm || Confirm.Prompt(prompt, "y");
+                        var delete = input.NoConfirm || Confirm.Prompt(prompt, "y");
 
                         if (delete)
                         {
-                            provider.Delete(model.Path);
+                            await provider.Delete(model.Path);
                             ColorConsole.Write(ConsoleColor.Red, " Deleted");
                         }
                         else
@@ -182,7 +191,7 @@ namespace Comsec.SqlPrune.Commands
                             ColorConsole.Write(ConsoleColor.DarkGreen, " Skipped");
                         }
 
-                        if (!options.NoConfirm)
+                        if (!input.NoConfirm)
                         {
                             Console.WriteLine(" {0}", model.Path);
                         }
@@ -220,8 +229,6 @@ namespace Comsec.SqlPrune.Commands
 
                 Console.WriteLine("             Total: {0,19:N0} ({1})", totalBytes, totalBytes.ToSizeWithSuffix());
             }
-
-            return (int) ExitCode.Success;
         }
     }
 }

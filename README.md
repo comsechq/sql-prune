@@ -104,34 +104,23 @@ Example:
 - Use a different file extension for your backup files: `-file-extensions .backup`
 - Match on multiple file extensions for your backup files: `-file-extensions .bak,.bak.7z,.bak.rar,.sql,.sql.gz`
 
-#### S3 Credentials
+#### S3 Credentials and region
 
 You can ignore this completely if you just want to prune files from a local folder.
 
-sqlprune.exe loads the amazon credentials it needs to connect to S3 a
-[configuration file](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html) located in `~/.aws/config`, using the `default` profile.
+`sqlprune.exe` will load default credentials configure with [aws configure](commahttps://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) command.
 
-Example:
+Optionnaly you can specifiy:
 
-    [default]
-    aws_access_key_id = XXXXXXXXXXXXXXXXXXXX
-    aws_secret_access_key = YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
-
-You can have more than one profile in your configuration file.
-
-To override the default profile name, either modify the `AWSProfileName` setting  in `sqlprune.exe.config` or alternatively add an `-AWSProfileName` parameter when you execute `sqlprune.exe` from the command line.
-
-You can also modify the `AWSProfilesLocation` setting in `sqlprune.exe.config` to load a different file (e.g. "c:\users\you\.aws\credentials").
-
-When not set, AWSProfileName defaults to `default` and AWSProfilesLocation defaults to `c:\users\[current_user]\.aws\config`.
+- A different profile name with the `--profile` parameter
+- A different profiles locaiton with `--profiles-location`
+- A different region with `--region`
 
 #### TODO:
 
 - Cutomisable pruning rules: 
     - Handle recovering to an S3 bucket as well as a local path
-    - Load the rules from an XML configuration file
-    - Generate an XSD that describes the XML syntax for pruning rules 
-    - The pruning rules in the configuration file are applied one after the other
+    - Load the rules from a configuration file (yaml or json files)? The pruning rules would apply one after the other
 
 #### Unit Testing
 

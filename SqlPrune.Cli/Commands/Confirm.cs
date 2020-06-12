@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Comsec.SqlPrune
+namespace Comsec.SqlPrune.Commands
 {
     /// <summary>
     /// Helper class to interact with the user.
@@ -21,7 +21,7 @@ namespace Comsec.SqlPrune
             ColorConsole.Write(ConsoleColor.DarkGray, "To continue please type '");
             ColorConsole.Write(ConsoleColor.White, expectedAnswer);
             ColorConsole.Write(ConsoleColor.DarkGray, "': ");
-            
+
             var check = Console.ReadLine();
 
             return check == expectedAnswer;

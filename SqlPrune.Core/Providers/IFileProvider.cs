@@ -45,7 +45,7 @@ namespace Comsec.SqlPrune.Providers
         /// A dictionary listing each file found and its size (in bytes).
         /// </returns>
         /// <remarks>
-        /// System Files and Folders will be ignored
+        /// System Files and Folders should be ignored
         /// </remarks>
         Task<IDictionary<string, long>> GetFiles(string dirPath, params string[] searchPattern);
 

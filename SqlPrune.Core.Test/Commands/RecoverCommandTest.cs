@@ -1,10 +1,10 @@
-using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using Comsec.SqlPrune.Providers;
 using LightInject;
 using Moq;
 using NUnit.Framework;
-using Sugar.Command;
 
 namespace Comsec.SqlPrune.Commands
 {
@@ -35,18 +35,9 @@ namespace Comsec.SqlPrune.Commands
         }
 
         [Test]
-        public void TestExecuteWithoutDateRestriction()
+        public async Task TestExecuteWithoutDateRestriction()
         {
             var command = Setup(out var context, out var provider1, out var provider2);
-
-            var options = new RecoverCommand.Options
-                          {
-                              Path = "s3://bucket",
-                              DatabaseName = "DbName",
-                              DestinationPath = @"c:\folder",
-                              FileExtensions = "*.bak,*.bak.7z",
-                              NoConfirm = true
-                          };
 
             provider1.Setup(call => call.ShouldRun("s3://bucket"))
                      .Returns(false);
@@ -75,29 +66,17 @@ namespace Comsec.SqlPrune.Commands
             provider1.Setup(call => call.IsDirectory(@"c:\folder"))
                      .ReturnsAsync(true);
 
-            var result = command.Execute(options);
+            await command.Execute(new RecoverCommand.Input("s3://bucket","*.bak,*.bak.7z", "DbName", new FileInfo(@"c:\folder"), null, true));
 
             provider2.Verify(
                 call => call.CopyToLocalAsync("s3://bucket/DbName_backup_2014_12_30_010001_3427331.bak.7z",
                     @"c:\folder\DbName_backup_2014_12_30_010001_3427331.bak.7z"), Times.Once());
-            
-            Assert.AreEqual((int) ExitCode.Success, result);
         }
 
         [Test]
-        public void TestExecuteWithDateTimeRestriction()
+        public async Task TestExecuteWithDateTimeRestriction()
         {
             var command = Setup(out var context, out var provider1, out var provider2);
-
-            var options = new RecoverCommand.Options
-                          {
-                              Path = "s3://bucket",
-                              DatabaseName = "DbName",
-                              DestinationPath = @"c:\folder",
-                              DateTime = new DateTime(2013, 10, 27, 1, 0, 3),
-                              FileExtensions = "*.bak",
-                              NoConfirm = true
-                          };
 
             provider1.Setup(call => call.ShouldRun("s3://bucket"))
                      .Returns(false);
@@ -124,30 +103,18 @@ namespace Comsec.SqlPrune.Commands
             provider1.Setup(call => call.IsDirectory(@"c:\folder"))
                      .ReturnsAsync(true);
 
-            var result = command.Execute(options);
+            await command.Execute(new RecoverCommand.Input("s3://bucket","*.bak", "DbName", new FileInfo(@"c:\folder"), "2013-10-27 01:00:03", true));
 
             provider2.Verify(
                 call =>
                     call.CopyToLocalAsync("s3://bucket/DbName_backup_2013_10_27_010003_3477881.bak",
                         @"c:\folder\DbName_backup_2013_10_27_010003_3477881.bak"), Times.Once());
-
-            Assert.AreEqual((int)ExitCode.Success, result);
         }
 
         [Test]
-        public void TestExecuteWithDateRestriction()
+        public async Task TestExecuteWithDateRestriction()
         {
             var command = Setup(out var context, out var provider1, out var provider2);
-
-            var options = new RecoverCommand.Options
-                          {
-                              Path = "s3://bucket",
-                              DatabaseName = "DbName",
-                              DestinationPath = @"c:\folder",
-                              Date = new DateTime(2013, 10, 27),
-                              FileExtensions = "*.bak",
-                              NoConfirm = true
-                          };
 
             provider1.Setup(call => call.ShouldRun("s3://bucket"))
                      .Returns(false);
@@ -175,13 +142,11 @@ namespace Comsec.SqlPrune.Commands
             provider1.Setup(call => call.IsDirectory(@"c:\folder"))
                      .ReturnsAsync(true);
 
-            var result = command.Execute(options);
+            await command.Execute(new RecoverCommand.Input("s3://bucket", "*.bak", "DbName", new FileInfo(@"c:\folder"), "2013-10-27", true));
 
             provider2.Verify(
                 call => call.CopyToLocalAsync("s3://bucket/DbName_backup_2013_10_27_020003_3477822.bak",
                     @"c:\folder\DbName_backup_2013_10_27_020003_3477822.bak"), Times.Once());
-
-            Assert.AreEqual((int)ExitCode.Success, result);
         }
     }
 }

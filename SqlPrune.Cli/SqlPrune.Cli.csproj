@@ -1,30 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net4.7.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Comsec.SqlPrune</RootNamespace>
     <AssemblyName>sqlprune</AssemblyName>
     <OutputType>Exe</OutputType>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <StartupObject>Comsec.SqlPrune.Program</StartupObject>
     <Company>Comsec Investigations Ltd</Company>
     <Authors>Comsec</Authors>
     <Description>CLI executable to prune files from a directory of S3 bucket.</Description>
     <Copyright>Comsec Investigations Ltd</Copyright>
-    <AssemblyVersion>0.3.3.0</AssemblyVersion>
-    <FileVersion>0.3.3.0</FileVersion>
+    <Version>0.4.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="comsec.sugar" Version="2.0.75" />
-    <PackageReference Include="comsec.sugar.command" Version="2.0.75" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20303.1" />
     <PackageReference Include="LightInject" Version="6.3.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SqlPrune.Core\SqlPrune.Core.csproj">
-      <Project>{d25c7d61-c511-45c5-b080-7c430b2ad9f0}</Project>
-      <Name>SqlPrune.Core</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\SqlPrune.Core\SqlPrune.Core.csproj" />
   </ItemGroup>
   
 </Project>
