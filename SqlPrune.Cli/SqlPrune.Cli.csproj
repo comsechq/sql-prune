@@ -16,11 +16,10 @@
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20303.1" />
-    <PackageReference Include="LightInject" Version="6.3.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SqlPrune.Core\SqlPrune.Core.csproj" />
+    <ProjectReference Include="..\SqlPrune.IoC\SqlPrune.IoC.csproj" />
   </ItemGroup>
   
 </Project>

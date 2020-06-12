@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SqlPrune.Cli\SqlPrune.Cli.csproj" />
     <ProjectReference Include="..\SqlPrune.Core\SqlPrune.Core.csproj" />
+    <ProjectReference Include="..\SqlPrune.Lambda\SqlPrune.Lambda.csproj" />
   </ItemGroup>
   
 </Project>

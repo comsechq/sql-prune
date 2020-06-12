@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Comsec.SqlPrune.LightInject;
-using LightInject;
 using Comsec.SqlPrune.Providers;
 using Comsec.SqlPrune.Services;
 using Sugar.Extensions;
@@ -29,44 +25,6 @@ namespace Comsec.SqlPrune.Commands
             : base(fileProviders)
         {
             this.pruneService = pruneService;
-        }
-
-        /// <summary>
-        /// Defines a sub command, its handler and adds it to the <see cref="parent"/> command.
-        /// </summary>
-        /// <param name="parent"></param>
-        /// <param name="container"></param>
-        public static void Configure(Command parent, ServiceContainer container)
-        {
-            var command = new Command("prune")
-                          {
-                              new Argument<string>("path",
-                                  description: "The path to a local folder or S3 bucket name"),
-                              new Option<string>(new[] {"--ext", "-ext"},
-                                  getDefaultValue: () => "*.bak,*.bak.7z,*.sql,*.sql.gz",
-                                  description: "Overrides the default file extensions (coma separated values can be used)"),
-                              new Option<bool>(new[] {"--delete", "-d"},
-                                  getDefaultValue: () => false,
-                                  description: "When specified files will be deleted") {Required = false},
-                              new Option<bool>(new[] {"--yes", "-y"},
-                                  getDefaultValue: () => false,
-                                  description: "Deletes files without confirmation") {Required = false}
-                          }.AddAwsSdkCredentialsOptions();
-
-            command.Handler = CommandHandler.Create<Input, string, string, string>(
-                async (input, profile, profilesLocation, region) =>
-                {
-                    container.RegisterOptionalAwsCredentials(profile, profilesLocation)
-                             .RegisterOptionalAwsRegion(region);
-
-                    container.Register<PruneCommand>();
-
-                    var instance = container.GetInstance<PruneCommand>();
-
-                    await instance.Execute(input);
-                });
-
-            parent.Add(command);
         }
 
         public class Input

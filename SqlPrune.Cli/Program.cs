@@ -1,10 +1,5 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.Builder;
-using System.CommandLine.IO;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using Comsec.SqlPrune.Commands;
 using Comsec.SqlPrune.LightInject;
 using LightInject;
@@ -32,8 +27,8 @@ namespace Comsec.SqlPrune
                                   Description = "Command line utility to prune (and recover) SQL backups in a folder (or S3 bucket)"
                               };
 
-            PruneCommand.Configure(rootCommand, container);
-            RecoverCommand.Configure(rootCommand, container);
+            rootCommand.ConfigurePruneCommand(container)
+                       .ConfigureRecoverCommand(container);
 
             var builder = new CommandLineBuilder(rootCommand);
 
