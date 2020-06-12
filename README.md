@@ -39,53 +39,56 @@ The utility relies on the date *in the file name*, **not** the file system's cre
 
     sqlprune.exe [path] -prune [-delete] [-no-confirm] [-aws-profile]
 
+ * __prune__: The flag to activate the 'prune' mode
  * __path__ is the path to a local folder or an S3 bucket containting .bak files (e.g. `c:\sql-backups` or `s3://bucket-name/backups`)
- * __-prune__: The flag to activate the 'prune' mode
- * __-delete__ is a flag you must add otherwise files will not be deleted
- * __-file-extensions__ is an optional parameter can use to restrict to different file extensions (see [File Extensions](#file-extensions))
- * __-no-confim__ is flag you can use if you don't want to confirm before any file is deleted 
- * __-AWSProfileName__ is optional and can be used to override the value of the `AWSProfileName` app setting (see S3 Credentials)
- * __-AWSProfilesLocation__ is optional and can be used to override the value of the `AWSProfilesLocation` app setting (see S3 Credentials)
+ * __--delete__ is a flag you must add otherwise files will not be deleted
+ * __--ext__ is an optional parameter can use to restrict to different file extensions (see [File Extensions](#file-extensions))
+ * __--yes__ is flag you can use if you don't want to confirm before any file is deleted 
+ * __--profile__ is optional and can be used to override the value of the `AWSProfileName`
+ * __--profilesLocation__ is optional and can be used to override the value of the `AWSProfilesLocation`
+ * __--region__ is optional and can be used to override the region when connecting to S3
 
 Examples:
 
 Simply list which `.bak` files would be pruned in a folder without deleting anthing (dry run):
 
-    sqlprune E:\Backups
+    sqlprune prune E:\Backups
 
 Confirm before deleting prunable backups in `E:\Backups`, including sub directories:
 
-    sqlprune E:\Backups -delete
+    sqlprune prune E:\Backups --delete
 
 Confirm before deleting prunable backups for database names starting with `test` in `s3://bucket-name`:
 
-    sqlprune s3://bucket-name/test -delete
+    sqlprune prune s3://bucket-name/test --delete
 
 ##### Recovery Mode:
 
     sqlprune.exe [path] -recover -db-name -dest [-date] [-no-confirm]
 
  * path: The path to a local folder or an S3 bucket containting .bak files (e.g. \"c:\\sql-backups\" or \"s3://bucket-name/backups\")");
- * __-recover__: The flag to activate the 'recovery' mode
- * __-db-name__: The exact name of the database to recover (case sensitive)
- * __-dest__: The path to a local folder where to copy the file to
- * __-date-time__: OptionallySpecifies which date and time to retrieve
- * __-date__: OptionallySpecifies which date to retrieve
- * __-file-extensions__ is an optional parameter can use to restrict to different file extensions (see [File Extensions](#file-extensions))
- * __-no-confim__ is flag you can use if you don't want to confirm before any file is recovered
- * __-aws-profile__ is optional and defaults to the value of the `AWSProfileName` app setting (see S3 Credentials)
+ * __recover__: The flag to activate the 'recovery' mode
+ * __path__ is the path to a local folder or an S3 bucket containting .bak files (e.g. `c:\sql-backups` or `s3://bucket-name/backups`)
+ * __--dbName__: The exact name of the database to recover (case sensitive)
+ * __--dest__: The path to a local folder where to copy the file to
+ * __--date__: OptionallySpecifies which date and time to retrieve
+ * __--ext__ is an optional parameter can use to restrict to different file extensions (see [File Extensions](#file-extensions))
+ * __--yes__ is flag you can use if you don't want to confirm before any file is recovered
+ * __--profile__ is optional and can be used to override the value of the `AWSProfileName`
+ * __--profilesLocation__ is optional and can be used to override the value of the `AWSProfilesLocation`
+ * __--region__ is optional and can be used to override the region when connecting to S3
 
-When multiple .bak files are found the most recent is used.
+When multiple backup files are found the most recent is used.
 
 Examples:
 
-Copy the most recent `.bak` backup available for the database `helloworld` from an S3 bucket:
+Copy the most recent backup available for the database `helloworld` from an S3 bucket:
 
-    sqlprune S3://bucket-name/test -recover -db-name helloworld -dest E:\Backups
+    sqlprune recover S3://bucket-name/test --db-name helloworld --dest E:\Backups
 
 Copy `helloWorld_backup_2014_06_20_010002_0957417.bak` from `E:\Backups` to the `C:\destination`:
 
-    sqlprune E:\Backups -recover -db-name helloWorld -date 2014-06-20T01:00:02 -dest C:\destination
+    sqlprune recover E:\Backups --dbName helloWorld --date 2014-06-20T01:00:02 --dest C:\destination
 
 #### Download & Install:
 
@@ -113,7 +116,7 @@ You can ignore this completely if you just want to prune files from a local fold
 Optionnaly you can specifiy:
 
 - A different profile name with the `--profile` parameter
-- A different profiles locaiton with `--profiles-location`
+- A different profiles locaiton with `--profilesLocation`
 - A different region with `--region`
 
 #### TODO:
