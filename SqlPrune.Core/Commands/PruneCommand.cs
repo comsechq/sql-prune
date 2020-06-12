@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Comsec.SqlPrune.Providers;
 using Comsec.SqlPrune.Services;
 using Sugar.Extensions;
@@ -10,9 +11,18 @@ using Sugar.Extensions;
 namespace Comsec.SqlPrune.Commands
 {
     /// <summary>
+    /// Interface representing a command that can execute a payload <see cref="T"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of payload.</typeparam>
+    public interface ICommand<in T>
+    {
+        Task Execute(T input);
+    }
+
+    /// <summary>
     /// Prunes a given location from its .bak files.
     /// </summary>
-    public class PruneCommand : BaseFileProviderCommand
+    public class PruneCommand : BaseFileProviderCommand, ICommand<PruneCommand.Input>
     {
         private readonly IPruneService pruneService;
 

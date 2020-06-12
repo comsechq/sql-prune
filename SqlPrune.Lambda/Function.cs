@@ -16,7 +16,7 @@ namespace SqlPrune.Lambda
     public class Function
     {
         private readonly ServiceContainer container;
-        private readonly PruneCommand pruneCommand;
+        private readonly ICommand<PruneCommand.Input> pruneCommand;
 
         /// <summary>
         /// Default constructor.
@@ -41,7 +41,7 @@ namespace SqlPrune.Lambda
         /// Test constructor.
         /// </summary>
         /// <param name="command"></param>
-        public Function(PruneCommand command)
+        public Function(ICommand<PruneCommand.Input> command)
         {
             pruneCommand = command;
         }

@@ -66,7 +66,7 @@ namespace Comsec.SqlPrune.Commands
             provider1.Setup(call => call.IsDirectory(@"c:\folder"))
                      .ReturnsAsync(true);
 
-            await command.Execute(new RecoverCommand.Input("s3://bucket","*.bak,*.bak.7z", "DbName", new FileInfo(@"c:\folder"), null, true));
+            await command.Execute(new RecoverCommand.Input("s3://bucket","*.bak,*.bak.7z", "DbName", new DirectoryInfo(@"c:\folder"), null, true));
 
             provider2.Verify(
                 call => call.CopyToLocalAsync("s3://bucket/DbName_backup_2014_12_30_010001_3427331.bak.7z",
@@ -103,7 +103,7 @@ namespace Comsec.SqlPrune.Commands
             provider1.Setup(call => call.IsDirectory(@"c:\folder"))
                      .ReturnsAsync(true);
 
-            await command.Execute(new RecoverCommand.Input("s3://bucket","*.bak", "DbName", new FileInfo(@"c:\folder"), "2013-10-27 01:00:03", true));
+            await command.Execute(new RecoverCommand.Input("s3://bucket","*.bak", "DbName", new DirectoryInfo(@"c:\folder"), "2013-10-27 01:00:03", true));
 
             provider2.Verify(
                 call =>
@@ -142,7 +142,7 @@ namespace Comsec.SqlPrune.Commands
             provider1.Setup(call => call.IsDirectory(@"c:\folder"))
                      .ReturnsAsync(true);
 
-            await command.Execute(new RecoverCommand.Input("s3://bucket", "*.bak", "DbName", new FileInfo(@"c:\folder"), "2013-10-27", true));
+            await command.Execute(new RecoverCommand.Input("s3://bucket", "*.bak", "DbName", new DirectoryInfo(@"c:\folder"), "2013-10-27", true));
 
             provider2.Verify(
                 call => call.CopyToLocalAsync("s3://bucket/DbName_backup_2013_10_27_020003_3477822.bak",

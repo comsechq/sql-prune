@@ -12,7 +12,7 @@ namespace Comsec.SqlPrune.Commands
     /// <summary>
     /// Command to recover (get a copy of) the a backup from a given set.
     /// </summary>
-    public class RecoverCommand : BaseFileProviderCommand
+    public class RecoverCommand : BaseFileProviderCommand, ICommand<RecoverCommand.Input>
     {
         private readonly IFileProvider localFileSystemProvider;
 
