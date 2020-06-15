@@ -11,7 +11,7 @@
     <Authors>Comsec</Authors>
     <Description>CLI executable to prune files from a directory of S3 bucket.</Description>
     <Copyright>Comsec Investigations Ltd</Copyright>
-    <Version>0.4.0</Version>
+    <Version>0.4.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

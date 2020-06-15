@@ -54,7 +54,7 @@ namespace Comsec.SqlPrune.Commands
                     Console.SetCursorPosition(0, Console.CursorTop);
                     var animationIndex = i % animation.Length;
                     var block = animation.Substring(animationIndex, 1);
-                    Console.Write($"{block} ({(i + 1) * 4} second(s) elapsed...");
+                    Console.Write($"{block} ({(i + 1) / 4} second(s) elapsed...");
                 }
                 
                 i++;
@@ -85,7 +85,7 @@ namespace Comsec.SqlPrune.Commands
                     Console.SetCursorPosition(0, Console.CursorTop);
                     var animationIndex = i % animation.Length;
                     var block = animation.Substring(animationIndex, 1);
-                    Console.Write($"{block} ({(i + 1) * 4} second(s) elapsed...");
+                    Console.Write($"{block} ({(i + 1) / 4} second(s) elapsed...");
                 }
                 
                 i++;
