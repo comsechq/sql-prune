@@ -23,7 +23,7 @@ namespace Comsec.SqlPrune.Commands
                               new Argument<string>("path",
                                   description: "The path to a local folder or S3 bucket name"),
                               new Option<string>(new[] {"--ext", "-ext"},
-                                  getDefaultValue: () => "*.bak,*.bak.7z,*.sql,*.sql.gz",
+                                  getDefaultValue: () => "*.bak,*.bak.zip,*.bak.7z,*.sql,*.sql.gz,*.sql.zip,*.sql.7z",
                                   description: "Overrides the default file extensions (coma separated values can be used)"),
                               new Option<bool>(new[] {"--delete", "-d"},
                                   getDefaultValue: () => false,
@@ -64,7 +64,7 @@ namespace Comsec.SqlPrune.Commands
                               new Argument<string>("path",
                                   "The path to a local folder or S3 bucket name"),
                               new Option<string>(new[] {"--ext"},
-                                  getDefaultValue: () => "*.bak,*.bak.7z,*.sql,*.sql.gz",
+                                  getDefaultValue: () => "*.bak,*.bak.zip,*.bak.7z,*.sql,*.sql.gz,*.sql.zip,*.sql.7z",
                                   description:
                                   "Overrides the default file extensions (coma separated values can be used)"),
                               new Option<string>("--dbName",
