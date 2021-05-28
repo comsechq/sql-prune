@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using Comsec.SqlPrune.Commands;
@@ -30,12 +31,12 @@ namespace SqlPrune.Lambda
                                                  EnablePropertyInjection = false
                                              });
 
-            container.RegisterFrom<SqlPruneCoreCompositionRoot>();
-
-            container.Register<PruneCommand>();
-
             container.Register<ILambdaLogger, FilteredLambdaLogger>();
-            container.Register<ILogger, SqlPrune.Lambda.Logger.LambdaLogger>();
+            container.Register<ILogger, Logger.LambdaLogger>();
+            
+            container.RegisterFrom<SqlPruneCoreCompositionRoot>();
+            
+            container.Register<PruneCommand>();
             
             pruneCommand = container.GetInstance<PruneCommand>();
         }
@@ -77,6 +78,11 @@ namespace SqlPrune.Lambda
         /// <returns></returns>
         public async Task FunctionHandler(Input input)
         {
+            if (string.IsNullOrEmpty(input.BucketName))
+            {
+                throw new ArgumentNullException(nameof(input), "Missing BucketName value");
+            }
+
             var commandInput = new PruneCommand.Input("s3://" + input.BucketName, input.FileExtensions.ToCsv(), true, true);
 
             await pruneCommand.Execute(commandInput);

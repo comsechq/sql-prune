@@ -21,8 +21,7 @@ namespace SqlPrune.Lambda.Logger
             format ??= string.Empty;
 
             logger.Log(string.Format(format, parameters));
-
-
+            
             return this;
         }
 

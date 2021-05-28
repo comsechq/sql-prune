@@ -8,7 +8,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.Core" Version="3.7.0.30" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.0.31" />
-    <PackageReference Include="comsec.sugar" Version="2.0.95" />
+    <PackageReference Include="comsec.sugar" Version="2.0.96" />
   </ItemGroup>
 
 </Project>

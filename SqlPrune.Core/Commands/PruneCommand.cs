@@ -27,12 +27,13 @@ namespace Comsec.SqlPrune.Commands
     {
         private readonly IPruneService pruneService;
         private readonly ILogger logger;
-        
+
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="fileProviders"></param>
         /// <param name="pruneService"></param>
+        /// <param name="logger"></param>
         public PruneCommand(IEnumerable<IFileProvider> fileProviders, IPruneService pruneService, ILogger logger) 
             : base(fileProviders)
         {
