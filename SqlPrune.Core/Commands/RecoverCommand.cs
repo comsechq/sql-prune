@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Comsec.SqlPrune.Logging;
 using Comsec.SqlPrune.Models;
 using Comsec.SqlPrune.Providers;
 using Sugar.Extensions;
@@ -15,16 +16,19 @@ namespace Comsec.SqlPrune.Commands
     public class RecoverCommand : BaseFileProviderCommand, ICommand<RecoverCommand.Input>
     {
         private readonly IFileProvider localFileSystemProvider;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="fileProviders"></param>
         /// <param name="localFileSystemProvider"></param>
-        public RecoverCommand(IEnumerable<IFileProvider> fileProviders, IFileProvider localFileSystemProvider) 
+        /// <param name="logger"></param>
+        public RecoverCommand(IEnumerable<IFileProvider> fileProviders, IFileProvider localFileSystemProvider, ILogger logger) 
             : base(fileProviders)
         {
             this.localFileSystemProvider = localFileSystemProvider;
+            this.logger = logger;
         }
 
         public class Input
@@ -66,12 +70,12 @@ namespace Comsec.SqlPrune.Commands
         {
             var provider = await GetProvider(input.Path);
 
-            Console.Write("Listing all ");
-            ColorConsole.Write(ConsoleColor.Cyan, "{0} backups with extensions: {1}", input.DatabaseName, input.FileExtensions);
-            Console.Write(" files in ");
-            ColorConsole.Write(ConsoleColor.Yellow, input.Path);
-            Console.WriteLine(" including subfolders...");
-            Console.WriteLine();
+            logger.Write("Listing all ");
+            logger.Write(ConsoleColor.Cyan, "{0} backups with extensions: {1}", input.DatabaseName, input.FileExtensions);
+            logger.Write(" files in ");
+            logger.Write(ConsoleColor.Yellow, input.Path);
+            logger.WriteLine(" including subfolders...");
+            logger.WriteLine();
 
             var extensionsSearchPatterns = input.FileExtensions
                                                 .FromCsv()
@@ -81,19 +85,19 @@ namespace Comsec.SqlPrune.Commands
             var allPathsTask = provider.GetFiles(input.Path, input.DatabaseName + "_backup_*")
                                        .GetAwaiter();
 
-            var allPaths = allPathsTask.OutputProgress();
+            var allPaths = allPathsTask.OutputProgress(logger);
 
             var paths = allPaths.Where(x => extensionsSearchPatterns.Any(y => x.Key.EndsWith(y)));
 
             foreach (var keyValuePair in paths)
             {
-                Console.WriteLine("{0}\t{1}", keyValuePair.Key, keyValuePair.Value);
+                logger.WriteLine("{0}\t{1}", keyValuePair.Key, keyValuePair.Value);
             }
 
             IEnumerable<BakModel> files = ToBakModels(paths);
 
-            Console.WriteLine("Found {0} file(s) out of which {1} have valid file names.", paths.Count(), files.Count());
-            Console.WriteLine();
+            logger.WriteLine("Found {0} file(s) out of which {1} have valid file names.", paths.Count(), files.Count());
+            logger.WriteLine();
 
             var groups = files.GroupBy(x => x.DatabaseName);
 
@@ -138,25 +142,25 @@ namespace Comsec.SqlPrune.Commands
             {
                 if (mostRecentFile.Size == destinationFileSize)
                 {
-                    Console.WriteLine("{0} already exists.", destination);
+                    logger.WriteLine("{0} already exists.", destination);
 
                     return;
                 }
                 
-                Console.WriteLine("{0} already exist but is not the same size and will be overwritten.", destination);
+                logger.WriteLine("{0} already exist but is not the same size and will be overwritten.", destination);
             }
 
             var copy = true;
 
             if (input.NoConfirm)
             {
-                Console.WriteLine("Copying {0} to {1}", mostRecentFile.Path, input.DestinationPath.FullName);
+                logger.WriteLine("Copying {0} to {1}", mostRecentFile.Path, input.DestinationPath.FullName);
             }
             else
             {
                 var prompt = $"Copy {mostRecentFile.Path} to {input.DestinationPath.FullName}?";
 
-                copy = Confirm.Prompt(prompt, "y");
+                copy = new Confirm(logger).Prompt(prompt, "y");
             }
 
             if (copy)
@@ -164,9 +168,9 @@ namespace Comsec.SqlPrune.Commands
                 var task = provider.CopyToLocalAsync(mostRecentFile.Path, destination)
                                    .GetAwaiter();
 
-                task.OutputProgress();
+                task.OutputProgress(logger);
 
-                Console.WriteLine("OK");
+                logger.WriteLine("OK");
             }
         }
     }

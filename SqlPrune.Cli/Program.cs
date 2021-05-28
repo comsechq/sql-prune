@@ -2,6 +2,7 @@
 using System.CommandLine.Builder;
 using Comsec.SqlPrune.Commands;
 using Comsec.SqlPrune.LightInject;
+using Comsec.SqlPrune.Logging;
 using LightInject;
 
 namespace Comsec.SqlPrune
@@ -21,6 +22,8 @@ namespace Comsec.SqlPrune
             var container = new ServiceContainer(options);
 
             container.RegisterFrom<SqlPruneCoreCompositionRoot>();
+
+            container.Register<ILogger, ConsoleLogger>();
 
             var rootCommand = new RootCommand
                               {

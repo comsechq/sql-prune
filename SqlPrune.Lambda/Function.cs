@@ -2,7 +2,9 @@ using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using Comsec.SqlPrune.Commands;
 using Comsec.SqlPrune.LightInject;
+using Comsec.SqlPrune.Logging;
 using LightInject;
+using Sugar.Amazon.Lambda;
 using Sugar.Extensions;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -23,17 +25,18 @@ namespace SqlPrune.Lambda
         /// </summary>
         public Function()
         {
-            var options = new ContainerOptions
-                          {
-                              EnablePropertyInjection = false
-                          };
-
-            container = new ServiceContainer(options);
+            container = new ServiceContainer(new ContainerOptions
+                                             {
+                                                 EnablePropertyInjection = false
+                                             });
 
             container.RegisterFrom<SqlPruneCoreCompositionRoot>();
 
             container.Register<PruneCommand>();
 
+            container.Register<ILambdaLogger, FilteredLambdaLogger>();
+            container.Register<ILogger, SqlPrune.Lambda.Logger.LambdaLogger>();
+            
             pruneCommand = container.GetInstance<PruneCommand>();
         }
 
@@ -71,9 +74,8 @@ namespace SqlPrune.Lambda
         /// A function that prunes the backup files from a bucket.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
         /// <returns></returns>
-        public async Task FunctionHandler(Input input, ILambdaContext context)
+        public async Task FunctionHandler(Input input)
         {
             var commandInput = new PruneCommand.Input("s3://" + input.BucketName, input.FileExtensions.ToCsv(), true, true);
 

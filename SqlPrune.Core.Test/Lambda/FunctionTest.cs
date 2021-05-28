@@ -26,7 +26,7 @@ namespace Comsec.SqlPrune.Lambda
                                              }
                         };
 
-            await function.FunctionHandler(input, null);
+            await function.FunctionHandler(input);
 
             mockedCommand.Verify(
                 call => call.Execute(

@@ -2,7 +2,9 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Amazon.S3.Model;
+using Comsec.SqlPrune.Logging;
 
 namespace Comsec.SqlPrune.Commands
 {
@@ -38,29 +40,44 @@ namespace Comsec.SqlPrune.Commands
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="taskToAwait"></param>
+        /// <param name="logger"></param>
         /// <returns></returns>
-        public static TResult OutputProgress<TResult>(this TaskAwaiter<TResult> taskToAwait) 
+        public static TResult OutputProgress<TResult>(this TaskAwaiter<TResult> taskToAwait, ILogger logger) 
         {
             var i = 0;
 
-            var top = GetTop();
-
-            do
+            if (logger is ConsoleLogger consoleLogger)
             {
-                Thread.Sleep(250);
+                var top = GetTop();
 
-                if (top > -1)
-                { 
-                    Console.SetCursorPosition(0, Console.CursorTop);
-                    var animationIndex = i % animation.Length;
-                    var block = animation.Substring(animationIndex, 1);
-                    Console.Write($"{block} ({(i + 1) / 4} second(s) elapsed...");
-                }
-                
-                i++;
-            } while (!taskToAwait.IsCompleted);
-            
-            Console.WriteLine(Environment.NewLine);
+                do
+                {
+                    Thread.Sleep(250);
+
+                    if (top > -1)
+                    {
+                        Console.SetCursorPosition(0, Console.CursorTop);
+                        var animationIndex = i % animation.Length;
+                        var block = animation.Substring(animationIndex, 1);
+                        Console.Write($"{block} ({(i + 1) / 4} second(s) elapsed...");
+                    }
+
+                    i++;
+                } while (!taskToAwait.IsCompleted);
+
+                Console.WriteLine(Environment.NewLine);
+            }
+            else
+            {
+                do
+                {
+                    i++;
+                    Thread.Sleep(100);
+                    // No output
+                } while (!taskToAwait.IsCompleted);
+
+                logger.WriteLine($"{(i + 1) / 10} second(s) elapsed...");
+            }
 
             return taskToAwait.GetResult();
         }
@@ -69,29 +86,43 @@ namespace Comsec.SqlPrune.Commands
         /// Outputs ▒ chars to the console until a task completes.
         /// </summary>
         /// <param name="taskToAwait"></param>
+        /// <param name="logger"></param>
         /// <returns></returns>
-        public static void OutputProgress(this TaskAwaiter taskToAwait) 
+        public static void OutputProgress(this TaskAwaiter taskToAwait, ILogger logger)
         {
             var i = 0;
 
-            var top = GetTop();
-
-            do
+            if (logger is ConsoleLogger consoleLogger)
             {
-                Thread.Sleep(250);
+                var top = GetTop();
 
-                if (top > -1)
+                do
                 {
-                    Console.SetCursorPosition(0, Console.CursorTop);
-                    var animationIndex = i % animation.Length;
-                    var block = animation.Substring(animationIndex, 1);
-                    Console.Write($"{block} ({(i + 1) / 4} second(s) elapsed...");
-                }
-                
-                i++;
-            } while (!taskToAwait.IsCompleted);
+                    Thread.Sleep(250);
 
-            Console.WriteLine(Environment.NewLine);
+                    if (top > -1)
+                    {
+                        Console.SetCursorPosition(0, Console.CursorTop);
+                        var animationIndex = i % animation.Length;
+                        var block = animation.Substring(animationIndex, 1);
+                        Console.Write($"{block} ({(i + 1) / 4} second(s) elapsed...");
+                    }
+                
+                    i++;
+                } while (!taskToAwait.IsCompleted);
+
+                Console.WriteLine(Environment.NewLine);
+            }
+            else
+            {
+                do
+                {
+                    i++;
+                    Thread.Sleep(100);
+                } while (!taskToAwait.IsCompleted);
+
+                logger.WriteLine($"{(i + 1) / 10} second(s) elapsed...");
+            }
         }
     }
 }

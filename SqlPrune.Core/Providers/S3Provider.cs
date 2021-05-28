@@ -6,6 +6,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Comsec.SqlPrune.Extensions;
+using Comsec.SqlPrune.Logging;
 using Sugar.Extensions;
 
 namespace Comsec.SqlPrune.Providers
@@ -16,14 +17,17 @@ namespace Comsec.SqlPrune.Providers
     public class S3Provider : IFileProvider
     {
         private readonly IAmazonS3 s3Client;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="s3Client"></param>
-        public S3Provider(IAmazonS3 s3Client)
+        /// <param name="logger"></param>
+        public S3Provider(IAmazonS3 s3Client, ILogger logger)
         {
             this.s3Client = s3Client;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -160,12 +164,12 @@ namespace Comsec.SqlPrune.Providers
                 if (amazonS3Exception.ErrorCode != null &&
                     (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") || amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
                 {
-                    Console.WriteLine("Check the provided AWS Credentials.");
-                    Console.WriteLine("To sign up for service, go to http://aws.amazon.com/s3");
+                    logger.WriteLine("Check the provided AWS Credentials.");
+                    logger.WriteLine("To sign up for service, go to http://aws.amazon.com/s3");
                 }
                 else
                 {
-                    Console.WriteLine("Error occurred. Message:'{0}' when listing objects", amazonS3Exception.Message);
+                    logger.WriteLine("Error occurred. Message:'{0}' when listing objects", amazonS3Exception.Message);
                 }
             }
 

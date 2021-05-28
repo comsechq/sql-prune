@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Comsec.SqlPrune.Extensions;
+using Comsec.SqlPrune.Logging;
 using Sugar.Extensions;
 
 namespace Comsec.SqlPrune.Providers
@@ -13,6 +14,17 @@ namespace Comsec.SqlPrune.Providers
     /// </summary>
     public class LocalFileSystemProvider : IFileProvider
     {
+        private readonly ILogger logger;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="logger"></param>
+        public LocalFileSystemProvider(ILogger logger)
+        {
+            this.logger = logger;
+        }
+
         /// <summary>
         /// Method called by the command to determine which <see cref="IFileProvider" /> implementation should run.
         /// </summary>
@@ -49,11 +61,11 @@ namespace Comsec.SqlPrune.Providers
             }
             catch(DirectoryNotFoundException e)
             {
-                Console.WriteLine(e.Message);
+                logger.WriteLine(e.Message);
             }
             catch(FileNotFoundException e)
             {
-                Console.WriteLine(e.Message);
+                logger.WriteLine(e.Message);
             }
 
             return Task.FromResult(false);
@@ -116,7 +128,7 @@ namespace Comsec.SqlPrune.Providers
         /// <remarks>
         /// Inspired from code example on http://msdn.microsoft.com/en-us/library/bb513869.aspx
         /// </remarks>
-        private static IList<string> WalkDirectory(DirectoryInfo root, params string[] searchPatterns)
+        private IList<string> WalkDirectory(DirectoryInfo root, params string[] searchPatterns)
         {
             var result = new List<string>();
 
@@ -131,11 +143,11 @@ namespace Comsec.SqlPrune.Providers
                 }
                 catch (UnauthorizedAccessException e)
                 {
-                    Console.WriteLine(e.Message);
+                    logger.WriteLine(e.Message);
                 }
                 catch (DirectoryNotFoundException e)
                 {
-                    Console.WriteLine(e.Message);
+                    logger.WriteLine(e.Message);
                 }
             }
 
@@ -151,11 +163,11 @@ namespace Comsec.SqlPrune.Providers
             }
             catch (UnauthorizedAccessException e)
             {
-                Console.WriteLine(e.Message);
+                logger.WriteLine(e.Message);
             }
             catch (DirectoryNotFoundException e)
             {
-                Console.WriteLine(e.Message);
+                logger.WriteLine(e.Message);
             }
             
             return result;

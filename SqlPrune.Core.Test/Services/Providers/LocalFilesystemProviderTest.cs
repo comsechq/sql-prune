@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
+using Comsec.SqlPrune.Logging;
 using Comsec.SqlPrune.Providers;
+using Moq;
 using NUnit.Framework;
 
 namespace Comsec.SqlPrune.Services.Providers
@@ -12,7 +14,7 @@ namespace Comsec.SqlPrune.Services.Providers
         [SetUp]
         public void Setup()
         {
-            provider = new LocalFileSystemProvider();
+            provider = new LocalFileSystemProvider(new Mock<ILogger>().Object);
         }
 
         [Test]
