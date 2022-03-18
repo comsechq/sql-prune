@@ -16,7 +16,7 @@ namespace Comsec.SqlPrune.Lambda
 
             var function = new Function(mockedCommand.Object);
 
-            var input = new Function.Input
+            var input = new Input
                         {
                             BucketName = "name",
                             FileExtensions = new[]

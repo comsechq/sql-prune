@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30128.74
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlPrune.Core", "SqlPrune.Core\SqlPrune.Core.csproj", "{FA8934C3-9DF2-426F-A379-A48BC5EE9599}"
 EndProject
@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlPrune.Cli", "SqlPrune.Cl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlPrune.Lambda", "SqlPrune.Lambda\SqlPrune.Lambda.csproj", "{E22FBD7B-1EDC-4F12-9D72-575C2805F5E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlPrune.IoC", "SqlPrune.IoC\SqlPrune.IoC.csproj", "{902DD8CC-63CF-4888-BB9D-1C641522E783}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlPrune.IoC", "SqlPrune.IoC\SqlPrune.IoC.csproj", "{902DD8CC-63CF-4888-BB9D-1C641522E783}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,25 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>Comsec.SqlPrune</RootNamespace>
-    <AssemblyName>sqlprune</AssemblyName>
-    <OutputType>Exe</OutputType>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-    <StartupObject>Comsec.SqlPrune.Program</StartupObject>
-    <Company>Comsec Investigations Ltd</Company>
-    <Authors>Comsec</Authors>
-    <Description>CLI executable to prune files from a directory of S3 bucket.</Description>
-    <Copyright>Comsec Investigations Ltd</Copyright>
-    <Version>0.4.0.1</Version>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <RootNamespace>Comsec.SqlPrune</RootNamespace>
+        <AssemblyName>sqlprune</AssemblyName>
+        <OutputType>Exe</OutputType>
+        <StartupObject>Comsec.SqlPrune.Program</StartupObject>
+        <Company>Comsec Investigations Ltd</Company>
+        <Authors>Comsec</Authors>
+        <Description>CLI executable to prune files from a directory of S3 bucket.</Description>
+        <Copyright>Comsec Investigations Ltd</Copyright>
+        <Version>0.4.0.1</Version>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21216.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21216.1" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SqlPrune.IoC\SqlPrune.IoC.csproj" />
-  </ItemGroup>
-  
+    <ItemGroup>
+        <ProjectReference Include="..\SqlPrune.IoC\SqlPrune.IoC.csproj" />
+    </ItemGroup>
+
 </Project>
