@@ -24,7 +24,7 @@ namespace Comsec.SqlPrune.Services.Providers
         {
             var provider = Setup(out var context);
 
-            Assert.IsTrue(provider.ShouldRun(@"s3://hello-world"));
+            Assert.That(provider.ShouldRun(@"s3://hello-world"), Is.True);
         }
 
         [Test]
@@ -32,11 +32,11 @@ namespace Comsec.SqlPrune.Services.Providers
         {
             var provider = Setup(out var context);
 
-            Assert.IsFalse(provider.ShouldRun(@"\\network-share\folder"));
-            Assert.IsFalse(provider.ShouldRun(@"smb://boo"));
-            Assert.IsFalse(provider.ShouldRun(@"e:\\boo"));
-            Assert.IsFalse(provider.ShouldRun(@"ftp://boo"));
-            Assert.IsFalse(provider.ShouldRun(@"http://boo"));
+            Assert.That(provider.ShouldRun(@"\\network-share\folder"), Is.False);
+            Assert.That(provider.ShouldRun(@"smb://boo"), Is.False);
+            Assert.That(provider.ShouldRun(@"e:\\boo"), Is.False);
+            Assert.That(provider.ShouldRun(@"ftp://boo"), Is.False);
+            Assert.That(provider.ShouldRun(@"http://boo"), Is.False);
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace Comsec.SqlPrune.Services.Providers
 
             var result = provider.ExtractFilenameFromPath("s3://bucket/folder/sub/file.ext");
 
-            Assert.AreEqual("file.ext", result);
+            Assert.That(result, Is.EqualTo("file.ext"));
         }
 
         [Test]
@@ -57,7 +57,7 @@ namespace Comsec.SqlPrune.Services.Providers
 
             var result = await provider.IsDirectory("s3://a-test-bucket/test");
 
-            Assert.IsTrue(result);
+            Assert.That(result, Is.True);
         }
 
         [Test]
@@ -68,7 +68,7 @@ namespace Comsec.SqlPrune.Services.Providers
 
             var result = await provider.IsDirectory("this-bucket-does-not-exist");
 
-            Assert.IsFalse(result);
+            Assert.That(result, Is.False);
         }
 
         [Test]
@@ -79,7 +79,7 @@ namespace Comsec.SqlPrune.Services.Providers
 
             var result = provider.GetFileSize("s3://a-test-bucket/folder/file.ext");
 
-            Assert.AreEqual(2849199616, result);
+            Assert.That(result, Is.EqualTo(2849199616));
         }
 
         [Test]
@@ -90,10 +90,10 @@ namespace Comsec.SqlPrune.Services.Providers
 
             var files = await provider.GetFiles("s3://a-test-bucket/folder", "*.zip");
 
-            Assert.Less(0, files.Count);
+            Assert.That(files.Count, Is.LessThan(0));
 
-            Assert.IsTrue(files.Keys.First().StartsWith("s3://"));
-            Assert.Less(0, files.Values.First());
+            Assert.That(files.Keys.First().StartsWith("s3://"), Is.True);
+            Assert.That(files.Values.First(), Is.LessThan(0));
         }
 
         [Test]

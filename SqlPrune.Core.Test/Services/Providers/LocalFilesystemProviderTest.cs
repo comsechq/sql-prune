@@ -20,20 +20,20 @@ namespace Comsec.SqlPrune.Services.Providers
         [Test]
         public void TestShouldRun()
         {
-            Assert.IsTrue(provider.ShouldRun("d:"));
-            Assert.IsTrue(provider.ShouldRun(@"\folder\on\current\drive"));
-            Assert.IsTrue(provider.ShouldRun(@"d:\"));
-            Assert.IsTrue(provider.ShouldRun(@"d:\folder"));
+            Assert.That(provider.ShouldRun("d:"), Is.True);
+            Assert.That(provider.ShouldRun(@"\folder\on\current\drive"), Is.True);
+            Assert.That(provider.ShouldRun(@"d:\"), Is.True);
+            Assert.That(provider.ShouldRun(@"d:\folder"), Is.True);
         }
 
         [Test]
         public void TestShouldNotRun()
         {
-            Assert.IsFalse(provider.ShouldRun(@"\\network-share\folder"));
-            Assert.IsFalse(provider.ShouldRun(@"smb://boo"));
-            Assert.IsFalse(provider.ShouldRun(@"s3://boo"));
-            Assert.IsFalse(provider.ShouldRun(@"ftp://boo"));
-            Assert.IsFalse(provider.ShouldRun(@"http://boo"));
+            Assert.That(provider.ShouldRun(@"\\network-share\folder"), Is.False);
+            Assert.That(provider.ShouldRun(@"smb://boo"), Is.False);
+            Assert.That(provider.ShouldRun(@"s3://boo"), Is.False);
+            Assert.That(provider.ShouldRun(@"ftp://boo"), Is.False);
+            Assert.That(provider.ShouldRun(@"http://boo"), Is.False);
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace Comsec.SqlPrune.Services.Providers
         {
             var result = provider.ExtractFilenameFromPath(@"E:\folder\sub\file.ext");
 
-            Assert.AreEqual("file.ext", result);
+            Assert.That(result, Is.EqualTo("file.ext"));
         }
 
         [Test]
@@ -49,7 +49,7 @@ namespace Comsec.SqlPrune.Services.Providers
         {
             var result = await provider.GetFileSize(@"C:\this\folder\should\not\exists\and\this\file.either");
 
-            Assert.AreEqual(-1, result);
+            Assert.That(result, Is.EqualTo(-1));
         }
     }
 }

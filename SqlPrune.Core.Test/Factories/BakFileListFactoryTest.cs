@@ -23,7 +23,7 @@ namespace Comsec.SqlPrune.Factories
             var result = BakFileListFactory.CreateDigitString(7);
 
             Assert.That(result, Is.Not.Null.Or.Empty);
-            Assert.AreEqual(7, result.Length);
+            Assert.That(result.Length, Is.EqualTo(7));
         }
 
         [Test]
@@ -34,19 +34,19 @@ namespace Comsec.SqlPrune.Factories
             // 3 years of backup files
             var result = factory.Create(from, 365 * 3);
 
-            Assert.AreEqual(365 * 3 * 3, result.Count);
+            Assert.That(result.Count, Is.EqualTo(365 * 3 * 3));
 
             var first = result.First();
 
-            Assert.IsTrue(first.Key.StartsWith("db1_backup_2010_11_20_010203_"));
-            Assert.IsTrue(first.Key.EndsWith(".bak"));
-            Assert.Less(0, first.Value);
+            Assert.That(first.Key.StartsWith("db1_backup_2010_11_20_010203_"), Is.True);
+            Assert.That(first.Key.EndsWith(".bak"), Is.True);
+            Assert.That(first.Value, Is.AtLeast(1));
 
             var last = result.Last();
 
-            Assert.IsTrue(last.Key.StartsWith("db3_backup_2013_11_18_010203_"));
-            Assert.IsTrue(last.Key.EndsWith(".bak"));
-            Assert.Less(0, last.Value);
+            Assert.That(last.Key.StartsWith("db3_backup_2013_11_18_010203_"), Is.True);
+            Assert.That(last.Key.EndsWith(".bak"), Is.True);
+            Assert.That(last.Value, Is.AtLeast(1));
         }
     }
 }

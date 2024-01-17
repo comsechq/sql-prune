@@ -32,8 +32,8 @@ namespace Comsec.SqlPrune.Services
 
             service.KeepFirst(set);
 
-            Assert.IsFalse(set[0].Prunable.Value);
-            Assert.IsTrue(set[1].Prunable.Value);
+            Assert.That(set[0].Prunable.Value, Is.False);
+            Assert.That(set[1].Prunable.Value, Is.True);
         }
 
         [Test]
@@ -47,8 +47,8 @@ namespace Comsec.SqlPrune.Services
 
             service.KeepOnePerDay(set);
 
-            Assert.IsFalse(set[0].Prunable.HasValue);
-            Assert.IsFalse(set[1].Prunable.HasValue);
+            Assert.That(set[0].Prunable.HasValue, Is.False);
+            Assert.That(set[1].Prunable.HasValue, Is.False);
         }
 
         [Test]
@@ -62,8 +62,8 @@ namespace Comsec.SqlPrune.Services
 
             service.KeepOnePerDay(set);
 
-            Assert.IsTrue(set[0].Prunable.Value);
-            Assert.IsTrue(set[1].Prunable.Value);
+            Assert.That(set[0].Prunable.Value, Is.True);
+            Assert.That(set[1].Prunable.Value, Is.True);
         }
 
         [Test]
@@ -80,11 +80,11 @@ namespace Comsec.SqlPrune.Services
             
             service.KeepOnePerDay(set);
 
-            Assert.IsTrue(set[0].Prunable.Value);
-            Assert.IsTrue(set[1].Prunable.Value);
-            Assert.IsFalse(set[2].Prunable.Value);
-            Assert.IsFalse(set[3].Prunable.Value);
-            Assert.IsTrue(set[4].Prunable.Value);
+            Assert.That(set[0].Prunable.Value, Is.True);
+            Assert.That(set[1].Prunable.Value, Is.True);
+            Assert.That(set[2].Prunable.Value, Is.False);
+            Assert.That(set[3].Prunable.Value, Is.False);
+            Assert.That(set[4].Prunable.Value, Is.True);
         }
 
         [Test]
@@ -100,8 +100,8 @@ namespace Comsec.SqlPrune.Services
 
             service.KeepDayOccurrences(set, DayOfWeek.Sunday, 0);
             
-            Assert.IsFalse(set[0].Prunable.Value);
-            Assert.IsTrue(set[1].Prunable.Value);
+            Assert.That(set[0].Prunable.Value, Is.False);
+            Assert.That(set[1].Prunable.Value, Is.True);
         }
 
         [Test]
@@ -123,11 +123,11 @@ namespace Comsec.SqlPrune.Services
 
             service.KeepDayOccurrences(set, DayOfWeek.Sunday, 0);
 
-            Assert.IsTrue(set[0].Prunable.Value);
-            Assert.IsFalse(set[1].Prunable.Value);
-            Assert.IsTrue(set[2].Prunable.Value);
-            Assert.IsTrue(set[3].Prunable.Value);
-            Assert.IsTrue(set[4].Prunable.Value);
+            Assert.That(set[0].Prunable.Value, Is.True);
+            Assert.That(set[1].Prunable.Value, Is.False);
+            Assert.That(set[2].Prunable.Value, Is.True);
+            Assert.That(set[3].Prunable.Value, Is.True);
+            Assert.That(set[4].Prunable.Value, Is.True);
         }
 
         [Test]
@@ -149,11 +149,11 @@ namespace Comsec.SqlPrune.Services
 
             service.KeepDayOccurrences(set, DayOfWeek.Sunday, new[] {0, 2});
 
-            Assert.IsFalse(set[0].Prunable.Value);
-            Assert.IsTrue(set[1].Prunable.Value);
-            Assert.IsFalse(set[2].Prunable.Value);
-            Assert.IsTrue(set[3].Prunable.Value);
-            Assert.IsTrue(set[4].Prunable.Value);
+            Assert.That(set[0].Prunable.Value, Is.False);
+            Assert.That(set[1].Prunable.Value, Is.True);
+            Assert.That(set[2].Prunable.Value, Is.False);
+            Assert.That(set[3].Prunable.Value, Is.True);
+            Assert.That(set[4].Prunable.Value, Is.True);
         }
 
         [Test]
@@ -175,8 +175,8 @@ namespace Comsec.SqlPrune.Services
 
             service.KeepDayOccurrences(set, DayOfWeek.Sunday, new[] {0, 2});
 
-            Assert.IsFalse(set[0].Prunable.Value);
-            Assert.IsFalse(set[1].Prunable.Value);
+            Assert.That(set[0].Prunable.Value, Is.False);
+            Assert.That(set[1].Prunable.Value, Is.False);
         }
 
         [Test]
@@ -202,10 +202,10 @@ namespace Comsec.SqlPrune.Services
 
             service.KeepDayOccurrences(set, DayOfWeek.Sunday, new[] {0, 2});
 
-            Assert.IsTrue(set[0].Prunable.Value);
-            Assert.IsTrue(set[1].Prunable.Value);
-            Assert.IsFalse(set[2].Prunable.Value);
-            Assert.IsFalse(set[3].Prunable.Value);
+            Assert.That(set[0].Prunable.Value, Is.True);
+            Assert.That(set[1].Prunable.Value, Is.True);
+            Assert.That(set[2].Prunable.Value, Is.False);
+            Assert.That(set[3].Prunable.Value, Is.False);
         }
 
         [Test]
@@ -213,17 +213,17 @@ namespace Comsec.SqlPrune.Services
         {
             var paths = ReadAllFileList();
 
-            var set = InitaliseBackupSet(paths).Where(x => x.Created >= new DateTime(2013, 4, 1))
+            var set = InitialiseBackupSet(paths).Where(x => x.Created >= new DateTime(2013, 4, 1))
                                                .Where(x => x.Created <= new DateTime(2013, 5, 1))
                                                .ToArray();
 
             service.KeepDayOccurrences(set, DayOfWeek.Sunday, new[] {0, 2});
 
-            Assert.AreEqual(2, set.Count(x => x.Prunable.HasValue && !x.Prunable.Value));
-            Assert.AreEqual(12, set.Count(x => x.Prunable.HasValue && x.Prunable.Value));
+            Assert.That(set.Count(x => x.Prunable.HasValue && !x.Prunable.Value), Is.EqualTo(2));
+            Assert.That(set.Count(x => x.Prunable.HasValue && x.Prunable.Value), Is.EqualTo(12));
 
-            Assert.IsFalse(set[4].Prunable.Value);
-            Assert.IsFalse(set[11].Prunable.Value);
+            Assert.That(set[4].Prunable.Value, Is.False);
+            Assert.That(set[11].Prunable.Value, Is.False);
         }
 
         [Test]
@@ -231,17 +231,17 @@ namespace Comsec.SqlPrune.Services
         {
             var paths = ReadAllFileList();
 
-            var set = InitaliseBackupSet(paths).Where(x => x.Created >= new DateTime(2013, 12, 1))
+            var set = InitialiseBackupSet(paths).Where(x => x.Created >= new DateTime(2013, 12, 1))
                                                .Where(x => x.Created <= new DateTime(2014, 1, 1))
                                                .ToArray();
 
             service.KeepDayOccurrences(set, DayOfWeek.Sunday, new[] { 0, 2 });
 
-            Assert.AreEqual(2, set.Count(x => x.Prunable.HasValue && !x.Prunable.Value));
-            Assert.AreEqual(12, set.Count(x => x.Prunable.HasValue && x.Prunable.Value));
+            Assert.That(set.Count(x => x.Prunable.HasValue && !x.Prunable.Value), Is.EqualTo(2));
+            Assert.That(set.Count(x => x.Prunable.HasValue && x.Prunable.Value), Is.EqualTo(12));
 
-            Assert.IsFalse(set[0].Prunable.Value);
-            Assert.IsFalse(set[4].Prunable.Value);
+            Assert.That(set[0].Prunable.Value, Is.False);
+            Assert.That(set[4].Prunable.Value, Is.False);
         }
 
         [Test]
@@ -269,7 +269,7 @@ namespace Comsec.SqlPrune.Services
             var paths = new BakFileListFactory().WithDatabases(new[] {"db1"})
                                                 .Create(now.AddDays(-howManyDays), now);
 
-            return InitaliseBackupSet(paths.Keys);
+            return InitialiseBackupSet(paths.Keys);
         }
 
         /// <summary>
@@ -284,19 +284,17 @@ namespace Comsec.SqlPrune.Services
         }
 
         /// <summary>
-        /// Initalises the backup set.
+        /// Initialises the backup set.
         /// </summary>
         /// <param name="paths">The paths.</param>
         /// <returns></returns>
-        private static List<BakModel> InitaliseBackupSet(IEnumerable<string> paths)
+        private static List<BakModel> InitialiseBackupSet(IEnumerable<string> paths)
         {
             var backupSet = new List<BakModel>();
 
             foreach (var path in paths)
             {
-                BakModel model;
-
-                if (!BakFilenameExtractor.ValidateFilenameAndExtract(path, out model)) continue;
+                if (!BakFilenameExtractor.ValidateFilenameAndExtract(path, out var model)) continue;
 
                 backupSet.Add(model);
             }
@@ -309,7 +307,7 @@ namespace Comsec.SqlPrune.Services
         /// Hint: Open Calendar.html at in this project.
         /// </summary>
         /// <param name="backupSet">The backup set.</param>
-        private void RenderPrunedData(IList<BakModel> backupSet)
+        private static void RenderPrunedData(IList<BakModel> backupSet)
         {
             var calendarModel = new CalendarModel
             {
@@ -338,68 +336,68 @@ namespace Comsec.SqlPrune.Services
 
             RenderPrunedData(backupSet);
 
-            Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
-            Assert.AreEqual(48, backupSet.Count(x => !x.Prunable.Value));
-            Assert.AreEqual(1452, backupSet.Count(x => x.Prunable.Value));
+            Assert.That(backupSet.Count(x => x.Prunable == null), Is.EqualTo(0));
+            Assert.That(backupSet.Count(x => !x.Prunable.Value), Is.EqualTo(48));
+            Assert.That(backupSet.Count(x => x.Prunable.Value), Is.EqualTo(1452));
 
             // First backup in the year
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2010, 5, 23)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2010, 5, 23)).Prunable.Value, Is.False);
 
             // First Sunday of each year
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2011, 1, 2)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2012, 1, 1)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 1, 6)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2011, 1, 2)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2012, 1, 1)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 1, 6)).Prunable.Value, Is.False);
 
             // First and thrid Sunday of each month (or at least two backups in the month)
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 6, 23)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 6, 30)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 7, 7)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 7, 21)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 8, 4)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 8, 18)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 9, 1)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 9, 15)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 10, 6)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 10, 20)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 11, 3)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 11, 17)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 12, 1)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 12, 15)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 1, 5)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 1, 19)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 2, 2)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 2, 16)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 3, 2)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 3, 16)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 4, 6)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 4, 20)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 6, 23)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 6, 30)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 7, 7)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 7, 21)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 8, 4)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 8, 18)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 9, 1)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 9, 15)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 10, 6)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 10, 20)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 11, 3)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 11, 17)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 12, 1)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 12, 15)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 1, 5)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 1, 19)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 2, 2)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 2, 16)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 3, 2)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 3, 16)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 4, 6)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 4, 20)).Prunable.Value, Is.False);
             
             // One Sunday per week
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 4, 27)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 4)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 11)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 18)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 25)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 1)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 8)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 4, 27)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 4)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 11)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 18)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 25)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 1)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 8)).Prunable.Value, Is.False);
 
             // Daily for two weeks 
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 12)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 13)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 14)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 15)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 16)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 17)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 18)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 19)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 20)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 20)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 21)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 22)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 23)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 24)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 25)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 26)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 12)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 13)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 14)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 15)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 16)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 17)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 18)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 19)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 20)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 20)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 21)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 22)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 23)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 24)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 25)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 26)).Prunable.Value, Is.False);
         }
 
         [Test]
@@ -423,110 +421,110 @@ namespace Comsec.SqlPrune.Services
 
             RenderPrunedData(backupSet);
 
-            Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
-            Assert.AreEqual(47, backupSet.Count(x => !x.Prunable.Value));
-            Assert.AreEqual(44, backupSet.Count(x => x.Prunable.Value));
+            Assert.That(backupSet.Count(x => x.Prunable == null), Is.EqualTo(0));
+            Assert.That(backupSet.Count(x => !x.Prunable.Value), Is.EqualTo(47));
+            Assert.That(backupSet.Count(x => x.Prunable.Value), Is.EqualTo(44));
 
             // First backup in the year
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2010, 5, 23)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2010, 5, 23)).Prunable.Value, Is.False);
 
             // First Sunday of each year
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2011, 1, 2)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2012, 1, 1)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 1, 6)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2011, 1, 2)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2012, 1, 1)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 1, 6)).Prunable.Value, Is.False);
 
             // First and third Sunday of each month
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 8, 4)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 9, 1)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 10, 6)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 11, 3)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2013, 12, 1)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 1, 5)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 2, 2)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 3, 2)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 4, 6)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 4)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 8, 4)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 9, 1)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 10, 6)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 11, 3)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 12, 1)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 1, 5)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 2, 2)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 3, 2)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 4, 6)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 4)).Prunable.Value, Is.False);
 
             // One Sunday per week
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 1)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 8)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 15)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 22)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 29)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 6)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 13)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 20)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 1)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 8)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 15)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 22)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 29)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 6)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 13)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 20)).Prunable.Value, Is.False);
             
             // Daily for two weeks
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 25)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 26)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 27)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 28)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 29)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 30)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 31)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 1)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 2)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 3)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 4)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 5)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 5)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 6)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 7)).Prunable.Value);
-            Assert.IsFalse(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 8)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 25)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 26)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 27)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 28)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 29)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 30)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 31)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 1)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 2)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 3)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 4)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 5)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 5)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 6)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 7)).Prunable.Value, Is.False);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 8, 8)).Prunable.Value, Is.False);
 
             // Pruned
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2013, 6, 23)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2013, 7, 7)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2013, 7, 21)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 6, 23)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 7, 7)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2013, 7, 21)).Prunable.Value, Is.True);
 
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 4, 27)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 11)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 25)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 4, 27)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 11)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 5, 25)).Prunable.Value, Is.True);
             
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 12)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 13)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 14)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 12)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 13)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 14)).Prunable.Value, Is.True);
             
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 16)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 17)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 18)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 19)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 20)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 21)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 16)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 17)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 18)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 19)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 20)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 21)).Prunable.Value, Is.True);
 
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 23)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 24)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 25)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 26)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 27)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 28)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 23)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 24)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 25)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 26)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 27)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 28)).Prunable.Value, Is.True);
 
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 30)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 1)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 2)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 3)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 4)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 5)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 6, 30)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 1)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 2)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 3)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 4)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 5)).Prunable.Value, Is.True);
 
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 7)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 8)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 9)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 10)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 11)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 12)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 7)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 8)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 9)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 10)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 11)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 12)).Prunable.Value, Is.True);
 
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 14)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 15)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 16)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 17)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 18)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 19)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 14)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 15)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 16)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 17)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 18)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 19)).Prunable.Value, Is.True);
 
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 21)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 22)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 23)).Prunable.Value);
-            Assert.IsTrue(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 24)).Prunable.Value);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 21)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 22)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 23)).Prunable.Value, Is.True);
+            Assert.That(backupSet.Single(x => x.Created.Date == new DateTime(2014, 7, 24)).Prunable.Value, Is.True);
         }
 
         [Test]
@@ -550,9 +548,9 @@ namespace Comsec.SqlPrune.Services
 
             RenderPrunedData(backupSet);
 
-            Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
-            Assert.AreEqual(46, backupSet.Count(x => !x.Prunable.Value));
-            Assert.AreEqual(193, backupSet.Count(x => x.Prunable.Value));
+            Assert.That(backupSet.Count(x => x.Prunable == null), Is.EqualTo(0));
+            Assert.That(backupSet.Count(x => !x.Prunable.Value), Is.EqualTo(46));
+            Assert.That(backupSet.Count(x => x.Prunable.Value), Is.EqualTo(193));
         }
 
         [Test]
@@ -575,8 +573,8 @@ namespace Comsec.SqlPrune.Services
             var keeperDay = backupSet.Where(x => x.Created.Date == new DateTime(2013, 11, 17))
                                        .ToArray();
 
-            Assert.IsTrue(keeperDay[0].Prunable.Value);
-            Assert.IsFalse(keeperDay[1].Prunable.Value);
+            Assert.That(keeperDay[0].Prunable.Value, Is.True);
+            Assert.That(keeperDay[1].Prunable.Value, Is.False);
         }
 
         [Test]
@@ -595,8 +593,8 @@ namespace Comsec.SqlPrune.Services
             var pruningDay = backupSet.Where(x => x.Created.Date == new DateTime(2013, 12, 8))
                                       .ToArray();
 
-            Assert.IsTrue(pruningDay[0].Prunable.Value);
-            Assert.IsTrue(pruningDay[1].Prunable.Value);
+            Assert.That(pruningDay[0].Prunable.Value, Is.True);
+            Assert.That(pruningDay[1].Prunable.Value, Is.True);
         }
 
         [Test]
@@ -604,15 +602,15 @@ namespace Comsec.SqlPrune.Services
         {
             var paths = ReadAllFileList();
 
-            var backupSet = InitaliseBackupSet(paths);
+            var backupSet = InitialiseBackupSet(paths);
 
             service.FlagPrunableBackupsInSet(backupSet);
 
             RenderPrunedData(backupSet);
 
-            Assert.AreEqual(0, backupSet.Count(x => x.Prunable == null));
-            Assert.AreEqual(41, backupSet.Count(x => !x.Prunable.Value));
-            Assert.AreEqual(340, backupSet.Count(x => x.Prunable.Value));
+            Assert.That(backupSet.Count(x => x.Prunable == null), Is.EqualTo(0));
+            Assert.That(backupSet.Count(x => !x.Prunable.Value), Is.EqualTo(41));
+            Assert.That(backupSet.Count(x => x.Prunable.Value), Is.EqualTo(340));
         }
     }
 }

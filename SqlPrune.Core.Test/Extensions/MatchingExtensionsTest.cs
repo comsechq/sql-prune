@@ -18,11 +18,11 @@ namespace Comsec.SqlPrune.Extensions
             var results = values.MatchOnAny(x => x, "*bak", "file4*", ".bak.7z", "exact_match.txt")
                                 .ToArray();
             
-            Assert.AreEqual(4, results.Length);
-            Assert.AreEqual("file2.bak", results[0]);
-            Assert.AreEqual("file4.bak", results[1]);
-            Assert.AreEqual("file5.bak.7z", results[2]);
-            Assert.AreEqual("exact_match.txt", results[3]);
+            Assert.That(results.Length, Is.EqualTo(4));
+            Assert.That(results[0], Is.EqualTo("file2.bak"));
+            Assert.That(results[1], Is.EqualTo("file4.bak"));
+            Assert.That(results[2], Is.EqualTo("file5.bak.7z"));
+            Assert.That(results[3], Is.EqualTo("exact_match.txt"));
         }
     }
 }

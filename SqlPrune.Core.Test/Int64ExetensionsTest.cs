@@ -10,7 +10,7 @@ namespace Comsec.SqlPrune
         {
             const long value = 0;
 
-            Assert.AreEqual("0", value.ToSizeWithSuffix());
+            Assert.That(value.ToSizeWithSuffix(), Is.EqualTo("0"));
         }
 
         [Test]
@@ -18,7 +18,7 @@ namespace Comsec.SqlPrune
         {
             const long value = 12;
 
-            Assert.AreEqual("12.0 bytes", value.ToSizeWithSuffix());
+            Assert.That(value.ToSizeWithSuffix(), Is.EqualTo("12.0 bytes"));
         }
 
         [Test]
@@ -26,7 +26,7 @@ namespace Comsec.SqlPrune
         {
             const long value = 354;
 
-            Assert.AreEqual("354.0 bytes", value.ToSizeWithSuffix());
+            Assert.That(value.ToSizeWithSuffix(), Is.EqualTo("354.0 bytes"));
         }
 
         [Test]
@@ -34,7 +34,7 @@ namespace Comsec.SqlPrune
         {
             const long value = 2400;
 
-            Assert.AreEqual("2.3 KB", value.ToSizeWithSuffix());
+            Assert.That(value.ToSizeWithSuffix(), Is.EqualTo("2.3 KB"));
         }
     }
 }
