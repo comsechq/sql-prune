@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.NamingConventionBinder;
 using System.IO;
 using Comsec.SqlPrune.LightInject;
 using Comsec.SqlPrune.Logging;
